@@ -2,10 +2,7 @@ package org.infinispan.loaders.mongodb.configuration;
 
 import org.infinispan.configuration.cache.AbstractStoreConfiguration;
 import org.infinispan.configuration.cache.AsyncStoreConfiguration;
-import org.infinispan.configuration.cache.LegacyConfigurationAdaptor;
-import org.infinispan.configuration.cache.LegacyLoaderAdapter;
 import org.infinispan.configuration.cache.SingletonStoreConfiguration;
-import org.infinispan.loaders.mongodb.MongoDBCacheStoreConfig;
 import org.infinispan.commons.configuration.BuiltBy;
 import org.infinispan.commons.util.TypedProperties;
 
@@ -15,7 +12,7 @@ import org.infinispan.commons.util.TypedProperties;
  * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
  */
 @BuiltBy(MongoDBCacheStoreConfigurationBuilder.class)
-public class MongoDBCacheStoreConfiguration extends AbstractStoreConfiguration implements LegacyLoaderAdapter<MongoDBCacheStoreConfig> {
+public class MongoDBCacheStoreConfiguration extends AbstractStoreConfiguration {
 
    private final String host;
    private final int port;
@@ -39,13 +36,6 @@ public class MongoDBCacheStoreConfiguration extends AbstractStoreConfiguration i
       this.collection = collection;
       this.timeout = timeout;
       this.acknowledgment = acknowledgment;
-   }
-
-   @Override
-   public MongoDBCacheStoreConfig adapt() {
-      MongoDBCacheStoreConfig mongoDBCacheStoreConfig = new MongoDBCacheStoreConfig(host, port, timeout, username, password, database, collection, acknowledgment);
-      LegacyConfigurationAdaptor.adapt(this, mongoDBCacheStoreConfig);
-      return mongoDBCacheStoreConfig;
    }
 
    public String host() {
