@@ -3,11 +3,10 @@ package org.infinispan.loaders.mongodb;
 import com.mongodb.*;
 import net.jcip.annotations.ThreadSafe;
 import org.infinispan.Cache;
+import org.infinispan.configuration.cache.CacheLoaderConfiguration;
 import org.infinispan.container.entries.InternalCacheEntry;
-import org.infinispan.loaders.AbstractCacheStore;
-import org.infinispan.loaders.CacheLoaderConfig;
+import org.infinispan.loaders.spi.AbstractCacheStore;
 import org.infinispan.loaders.CacheLoaderException;
-import org.infinispan.loaders.CacheLoaderMetadata;
 import org.infinispan.loaders.mongodb.logging.Log;
 import org.infinispan.commons.marshall.StreamingMarshaller;
 import org.infinispan.util.logging.LogFactory;
@@ -26,7 +25,6 @@ import java.util.Set;
  * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
  */
 @ThreadSafe
-@CacheLoaderMetadata(configurationClass = MongoDBCacheStoreConfig.class)
 public class MongoDBCacheStore extends AbstractCacheStore {
 
    private static final Log log = LogFactory.getLog(MongoDBCacheStore.class, Log.class);
@@ -41,7 +39,7 @@ public class MongoDBCacheStore extends AbstractCacheStore {
    private static final String VALUE_FIELD = "value";
 
    @Override
-   public void init(CacheLoaderConfig config, Cache<?, ?> cache, StreamingMarshaller m) throws CacheLoaderException {
+   public void init(CacheLoaderConfiguration config, Cache<?, ?> cache, StreamingMarshaller m) throws CacheLoaderException {
       super.init(config, cache, m);
       this.cfg = (MongoDBCacheStoreConfig) config;
    }
@@ -230,11 +228,6 @@ public class MongoDBCacheStore extends AbstractCacheStore {
          values.add(this.unmarshall(rawObject, ID_FIELD));
       }
       return values;
-   }
-
-   @Override
-   public Class<? extends CacheLoaderConfig> getConfigurationClass() {
-      return MongoDBCacheStoreConfig.class;
    }
 
    @Override
