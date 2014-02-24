@@ -4,6 +4,12 @@ import org.infinispan.commons.io.ByteBuffer;
 
 import java.io.Serializable;
 
+/**
+ * This class represents a Serializable ByteBuffer.<br/>
+ * Objects like KeyByteBuffer, ValueByteBuffer or MedatadaByteBuffer will be represented by this class and persisted in MongoDBStore.
+ *
+ * @author Gabriel Francisco <gabfssilva@gmail.com>
+ */
 public class SerializableByteBuffer implements Serializable, ByteBuffer {
     private static final long serialVersionUID = -215291623591872364L;
 

@@ -5,7 +5,10 @@ import org.infinispan.configuration.cache.AbstractStoreConfigurationBuilder;
 import org.infinispan.configuration.cache.PersistenceConfigurationBuilder;
 
 /**
- * Created by gabriel on 2/22/14.
+ * A MongoDBStoreConfiguration Builder. <br/>
+ * This class creates a MongoDBStoreConfiguration, wrapping all the connection data to the MongoDB.
+ *
+ * @author Gabriel Francisco <gabfssilva@gmail.com>
  */
 public class MongoDBStoreConfigurationBuilder extends AbstractStoreConfigurationBuilder<MongoDBStoreConfiguration, MongoDBStoreConfigurationBuilder> {
     private String hostname;

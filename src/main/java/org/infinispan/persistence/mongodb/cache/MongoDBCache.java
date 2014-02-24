@@ -3,17 +3,19 @@ package org.infinispan.persistence.mongodb.cache;
 import com.google.gson.Gson;
 import com.mongodb.*;
 import org.infinispan.persistence.mongodb.configuration.MongoDBStoreConfiguration;
-import org.infinispan.persistence.mongodb.exception.MongoDBStoreException;
 import org.infinispan.persistence.mongodb.store.entry.CacheEntry;
 import org.infinispan.persistence.mongodb.store.entry.KeyEntry;
 
-import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Created by gabriel on 2/22/14.
+ * An implementation of the Cache interface based on MongoDB
+ *
+ * @param <K> - key
+ * @param <V> - value
+ * @author Gabriel Francisco <gabfssilva@gmail.com>
  */
 public class MongoDBCache<K, V> implements Cache<K, V> {
     private MongoClient mongoClient;
@@ -22,26 +24,22 @@ public class MongoDBCache<K, V> implements Cache<K, V> {
 
     private MongoDBStoreConfiguration mongoCacheConfiguration;
 
-    public MongoDBCache(MongoDBStoreConfiguration mongoCacheConfiguration) throws MongoDBStoreException {
+    public MongoDBCache(MongoDBStoreConfiguration mongoCacheConfiguration) throws Exception {
         this.mongoCacheConfiguration = mongoCacheConfiguration;
         init();
     }
 
-    private void init() throws MongoDBStoreException {
-        try {
-            mongoClient = new MongoClient(mongoCacheConfiguration.hostname(), mongoCacheConfiguration.port());
-            database = mongoClient.getDB(mongoCacheConfiguration.database());
+    private void init() throws Exception {
+        mongoClient = new MongoClient(mongoCacheConfiguration.hostname(), mongoCacheConfiguration.port());
+        database = mongoClient.getDB(mongoCacheConfiguration.database());
 
-            if (mongoCacheConfiguration.secure()) {
-                database.authenticate(mongoCacheConfiguration.username(), mongoCacheConfiguration.password().toCharArray());
-            }
-
-            collection = database.getCollection(mongoCacheConfiguration.collection());
-
-            collection.ensureIndex(new BasicDBObject("key", ""), new BasicDBObject("unique", true));
-        } catch (UnknownHostException e) {
-            throw new MongoDBStoreException("Unable to connect to MongoBD", e);
+        if (mongoCacheConfiguration.secure()) {
+            database.authenticate(mongoCacheConfiguration.username(), mongoCacheConfiguration.password().toCharArray());
         }
+
+        collection = database.getCollection(mongoCacheConfiguration.collection());
+
+        collection.ensureIndex(new BasicDBObject("key", ""), new BasicDBObject("unique", true));
     }
 
     @Override

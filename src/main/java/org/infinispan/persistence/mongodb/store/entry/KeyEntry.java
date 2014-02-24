@@ -3,7 +3,11 @@ package org.infinispan.persistence.mongodb.store.entry;
 import java.io.Serializable;
 
 /**
- * Created by gabriel on 2/20/14.
+ * This class represents a key entry.
+ * This class will be converted to Json to be persisted as a index in MongoDB.
+ *
+ * @param <K> - key type
+ * @author Gabriel Francisco <gabfssilva@gmail.com>
  */
 public class KeyEntry<K> implements Serializable {
     private K key;

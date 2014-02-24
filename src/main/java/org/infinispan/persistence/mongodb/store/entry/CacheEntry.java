@@ -3,6 +3,13 @@ package org.infinispan.persistence.mongodb.store.entry;
 import java.io.Serializable;
 import java.util.Date;
 
+/**
+ * This class represents any value entry of the cache. <br/>
+ * This class will be converted to Json to be persisted in MongoDB.
+ *
+ * @param <V> - value type
+ * @author Gabriel Francisco <gabfssilva@gmail.com>
+ */
 public class CacheEntry<V> implements Serializable {
     private static final long serialVersionUID = -850818539998912635L;
 

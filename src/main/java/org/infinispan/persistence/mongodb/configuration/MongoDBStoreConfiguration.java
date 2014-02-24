@@ -10,7 +10,10 @@ import org.infinispan.persistence.mongodb.store.MongoDBStore;
 import java.util.Properties;
 
 /**
- * Created by gabriel on 2/22/14.
+ * The configuration of MongoDBStore. <br/>
+ * This class is a AbstractStoreConfiguration child
+ *
+ * @author Gabriel Francisco <gabfssilva@gmail.com>
  */
 @ConfigurationFor(MongoDBStore.class)
 @BuiltBy(MongoDBStoreConfigurationBuilder.class)

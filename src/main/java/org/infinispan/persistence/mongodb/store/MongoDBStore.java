@@ -1,5 +1,6 @@
 package org.infinispan.persistence.mongodb.store;
 
+import net.jcip.annotations.ThreadSafe;
 import org.infinispan.commons.io.ByteBuffer;
 import org.infinispan.executors.ExecutorAllCompletionService;
 import org.infinispan.marshall.core.MarshalledEntry;
@@ -8,7 +9,6 @@ import org.infinispan.persistence.TaskContextImpl;
 import org.infinispan.persistence.mongodb.cache.Cache;
 import org.infinispan.persistence.mongodb.cache.MongoDBCache;
 import org.infinispan.persistence.mongodb.configuration.MongoDBStoreConfiguration;
-import org.infinispan.persistence.mongodb.exception.MongoDBStoreException;
 import org.infinispan.persistence.mongodb.store.entry.CacheEntry;
 import org.infinispan.persistence.mongodb.store.entry.CacheEntryBuilder;
 import org.infinispan.persistence.mongodb.store.entry.KeyEntry;
@@ -20,8 +20,15 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 
 /**
- * Created by gabriel on 2/22/14.
+ * AdvancedLoadWriteStore implementation based on MongoDB. <br/>
+ * This class is fully thread safe
+ * 
+ * @param <K>
+ * @param <V>
+ *
+ * @author Gabriel Francisco <gabfssilva@gmail.com>
  */
+@ThreadSafe
 public class MongoDBStore<K, V> implements AdvancedLoadWriteStore<K, V> {
     private InitializationContext context;
 
@@ -34,7 +41,7 @@ public class MongoDBStore<K, V> implements AdvancedLoadWriteStore<K, V> {
         configuration = ctx.getConfiguration();
         try {
             cache = new MongoDBCache(configuration);
-        } catch (MongoDBStoreException e) {
+        } catch (Exception e) {
             throw new PersistenceException(e);
         }
     }

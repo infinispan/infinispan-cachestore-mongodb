@@ -4,6 +4,12 @@ import org.infinispan.commons.io.ByteBuffer;
 
 import java.util.Date;
 
+/**
+ * A CacheEntry builder.
+ *
+ * @param <V>
+ * @author Gabriel Francisco <gabfssilva@gmail.com>
+ */
 public class CacheEntryBuilder<V> {
     private SerializableByteBuffer keyByteBuffer;
     private SerializableByteBuffer valueByteBuffer;
