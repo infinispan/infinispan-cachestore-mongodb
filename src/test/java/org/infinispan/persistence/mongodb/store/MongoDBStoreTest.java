@@ -19,7 +19,9 @@ import static org.mockito.Mockito.*;
 import static org.testng.Assert.assertTrue;
 
 /**
- * Created by gabriel on 2/22/14.
+ * Test for MongoDBStoreTest
+ *
+ * @author Gabriel Francisco <gabfssilva@gmail.com>
  */
 public class MongoDBStoreTest<K extends KeyEntry<K>, V> {
     private MongoDBStore<K, V> store;

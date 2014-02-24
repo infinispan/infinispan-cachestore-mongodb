@@ -7,7 +7,9 @@ import org.testng.annotations.Test;
 import static org.testng.Assert.assertTrue;
 
 /**
- * Created by gabriel on 2/22/14.
+ * Test for MongoDBStoreConfigurationBuilder
+ *
+ * @author Gabriel Francisco <gabfssilva@gmail.com>
  */
 public class MongoDBStoreConfigurationBuilderTest {
     private static final String HOSTNAME = "localhost";

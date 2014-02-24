@@ -22,7 +22,7 @@ import java.util.concurrent.Executor;
 /**
  * AdvancedLoadWriteStore implementation based on MongoDB. <br/>
  * This class is fully thread safe
- * 
+ *
  * @param <K>
  * @param <V>
  *
