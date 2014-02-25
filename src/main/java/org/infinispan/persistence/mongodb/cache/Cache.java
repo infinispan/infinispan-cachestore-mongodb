@@ -57,9 +57,8 @@ public interface Cache<K, V> {
     Set<KeyEntry<K>> keySet();
 
     /**
-     * This method must remove all data which is expired. <br/>
-     * What means that it must be checked every entry which has
-     * the @expiration parameter expired.
+     * This method must remove all data which are expired. <br/>
+     * What means delete all entries that have the expiration parameter less than the current date.
      */
     void removeExpiredData();
 
