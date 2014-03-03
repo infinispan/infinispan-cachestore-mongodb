@@ -1,21 +1,21 @@
 package org.infinispan.persistence.mongodb.store;
 
 import net.jcip.annotations.ThreadSafe;
-import org.infinispan.commons.io.ByteBuffer;
+import org.infinispan.commons.marshall.StreamingMarshaller;
 import org.infinispan.executors.ExecutorAllCompletionService;
 import org.infinispan.marshall.core.MarshalledEntry;
 import org.infinispan.metadata.InternalMetadata;
 import org.infinispan.persistence.TaskContextImpl;
-import org.infinispan.persistence.mongodb.cache.Cache;
 import org.infinispan.persistence.mongodb.cache.MongoDBCache;
+import org.infinispan.persistence.mongodb.cache.MongoDBCacheImpl;
 import org.infinispan.persistence.mongodb.configuration.MongoDBStoreConfiguration;
-import org.infinispan.persistence.mongodb.store.entry.CacheEntry;
-import org.infinispan.persistence.mongodb.store.entry.CacheEntryBuilder;
-import org.infinispan.persistence.mongodb.store.entry.KeyEntry;
 import org.infinispan.persistence.spi.AdvancedLoadWriteStore;
 import org.infinispan.persistence.spi.InitializationContext;
 import org.infinispan.persistence.spi.PersistenceException;
 
+import java.io.IOException;
+import java.util.Date;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 
@@ -25,14 +25,13 @@ import java.util.concurrent.Executor;
  *
  * @param <K>
  * @param <V>
- *
  * @author Gabriel Francisco <gabfssilva@gmail.com>
  */
 @ThreadSafe
 public class MongoDBStore<K, V> implements AdvancedLoadWriteStore<K, V> {
     private InitializationContext context;
 
-    private Cache<K, V> cache;
+    private MongoDBCache<K, V> cache;
     private MongoDBStoreConfiguration configuration;
 
     @Override
@@ -40,7 +39,7 @@ public class MongoDBStore<K, V> implements AdvancedLoadWriteStore<K, V> {
         context = ctx;
         configuration = ctx.getConfiguration();
         try {
-            cache = new MongoDBCache(configuration);
+            cache = new MongoDBCacheImpl<K, V>(configuration);
         } catch (Exception e) {
             throw new PersistenceException(e);
         }
@@ -48,29 +47,34 @@ public class MongoDBStore<K, V> implements AdvancedLoadWriteStore<K, V> {
 
     @Override
     public void process(KeyFilter<K> filter, final CacheLoaderTask<K, V> task, Executor executor, boolean fetchValue, boolean fetchMetadata) {
-        ExecutorAllCompletionService eacs = new ExecutorAllCompletionService(executor);
+        Set<byte[]> keys = null;
+
         synchronized (cache) {
-            final TaskContextImpl taskContext = new TaskContextImpl();
-            for (final KeyEntry<K> keyEntry : cache.keySet()) {
-                if (filter == null || filter.shouldLoadKey(keyEntry.getKey())) {
-                    if (taskContext.isStopped()) {
-                        break;
-                    }
-                    eacs.submit(new Callable<Void>() {
-                        @Override
-                        public Void call() throws Exception {
-                            try {
-                                final MarshalledEntry marshalledEntry = load(keyEntry.getKey());
-                                if (marshalledEntry != null) {
-                                    task.processEntry(marshalledEntry, taskContext);
-                                }
-                                return null;
-                            } catch (Exception e) {
-                                throw e;
-                            }
-                        }
-                    });
+            keys = cache.keySet();
+        }
+
+        ExecutorAllCompletionService eacs = new ExecutorAllCompletionService(executor);
+        final TaskContextImpl taskContext = new TaskContextImpl();
+        for (byte[] key : keys) {
+            final K marshalledKey = (K) toObject(key);
+            if (filter == null || filter.shouldLoadKey(marshalledKey)) {
+                if (taskContext.isStopped()) {
+                    break;
                 }
+                eacs.submit(new Callable<Void>() {
+                    @Override
+                    public Void call() throws Exception {
+                        try {
+                            final MarshalledEntry<K, V> marshalledEntry = load(marshalledKey);
+                            if (marshalledEntry != null) {
+                                task.processEntry(marshalledEntry, taskContext);
+                            }
+                            return null;
+                        } catch (Exception e) {
+                            throw e;
+                        }
+                    }
+                });
             }
         }
         eacs.waitUntilAllCompleted();
@@ -81,12 +85,16 @@ public class MongoDBStore<K, V> implements AdvancedLoadWriteStore<K, V> {
 
     @Override
     public int size() {
-        return cache.size();
+        synchronized (cache) {
+            return cache.size();
+        }
     }
 
     @Override
     public void clear() {
-        cache.clear();
+        synchronized (cache) {
+            cache.clear();
+        }
     }
 
     @Override
@@ -98,25 +106,25 @@ public class MongoDBStore<K, V> implements AdvancedLoadWriteStore<K, V> {
 
     @Override
     public void write(MarshalledEntry<K, V> entry) {
-        CacheEntryBuilder<V> builder = new CacheEntryBuilder<V>();
+        MongoDBEntry.Builder<K, V> mongoDBEntryBuilder = MongoDBEntry.builder();
 
-        builder.value(entry.getValue())
-                .expiration(entry.getMetadata().expiryTime())
-                .keyByteBuffer(entry.getKeyBytes())
-                .valueByteBuffer(entry.getValueBytes())
-                .metadataByteBuffer(entry.getMetadataBytes());
+        mongoDBEntryBuilder
+                .keyBytes(toByteArray(entry.getKey()))
+                .valueBytes(toByteArray(entry.getValue()))
+                .metadataBytes(toByteArray(entry.getMetadata()))
+                .expiryTime(new Date(entry.getMetadata().expiryTime()));
 
-        CacheEntry<V> serializable = builder.create();
+        MongoDBEntry<K, V> mongoDBEntry = mongoDBEntryBuilder.create();
 
         synchronized (cache) {
-            cache.put(createKeyEntry(entry.getKey()), serializable);
+            cache.put(mongoDBEntry);
         }
     }
 
     @Override
     public boolean delete(K key) {
         synchronized (cache) {
-            return cache.remove(createKeyEntry(key)) != null;
+            return cache.remove(toByteArray(key));
         }
     }
 
@@ -126,42 +134,33 @@ public class MongoDBStore<K, V> implements AdvancedLoadWriteStore<K, V> {
     }
 
     private MarshalledEntry<K, V> load(K key, boolean binaryData) {
-        CacheEntry<V> value = null;
+        MongoDBEntry<K, V> mongoDBEntry = null;
 
         synchronized (cache) {
-            KeyEntry<K> keyEntry = createKeyEntry(key);
-            value = cache.get(keyEntry);
-
-            if (value == null) {
-                return null;
-            }
-
-            try {
-                ByteBuffer metadataBytes = context.getByteBufferFactory().newByteBuffer(value.getMetadataByteBuffer().getBuf(), value.getMetadataByteBuffer().getOffset(),
-                        value.getMetadataByteBuffer().getLength());
-
-                InternalMetadata metadata = (InternalMetadata) context.getMarshaller().objectFromByteBuffer(metadataBytes.getBuf());
-
-                if (binaryData) {
-                    ByteBuffer keyBuffer = context.getByteBufferFactory().newByteBuffer(value.getKeyByteBuffer().getBuf(), value.getKeyByteBuffer().getOffset(),
-                            value.getKeyByteBuffer().getLength());
-
-                    ByteBuffer valueBuffer = context.getByteBufferFactory().newByteBuffer(value.getValueByteBuffer().getBuf(), value.getValueByteBuffer().getOffset(),
-                            value.getValueByteBuffer().getLength());
-
-                    return context.getMarshalledEntryFactory().newMarshalledEntry(keyBuffer, valueBuffer, metadataBytes);
-                }
-
-                return context.getMarshalledEntryFactory().newMarshalledEntry(keyEntry, value.getValue(), metadata);
-            } catch (Exception e) {
-                throw new PersistenceException("Error while loading object from cache", e);
-            }
+            mongoDBEntry = cache.get(toByteArray(key));
         }
+
+        if (mongoDBEntry == null) {
+            return null;
+        }
+
+        K k = mongoDBEntry.getKey(marshaller());
+        V v = mongoDBEntry.getValue(marshaller());
+
+        InternalMetadata metadata = null;
+
+        metadata = (InternalMetadata) toObject(mongoDBEntry.getMetadataBytes());
+
+        MarshalledEntry result = context.getMarshalledEntryFactory().newMarshalledEntry(k, v, metadata);
+
+        return result;
     }
 
     @Override
     public boolean contains(K key) {
-        return cache.containsKey(createKeyEntry(key));
+        synchronized (cache) {
+            return cache.containsKey(toByteArray(key));
+        }
     }
 
     @Override
@@ -176,8 +175,30 @@ public class MongoDBStore<K, V> implements AdvancedLoadWriteStore<K, V> {
 
     }
 
-    private KeyEntry<K> createKeyEntry(K key) {
-        return new KeyEntry<K>(key);
+    private Object toObject(byte[] bytes) {
+        try {
+            return marshaller().objectFromByteBuffer(bytes);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private byte[] toByteArray(Object obj) {
+        try {
+            return marshaller().objectToByteBuffer(obj);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private StreamingMarshaller marshaller() {
+        return context.getMarshaller();
     }
 
     public InitializationContext getContext() {
@@ -188,11 +209,7 @@ public class MongoDBStore<K, V> implements AdvancedLoadWriteStore<K, V> {
         this.context = context;
     }
 
-    public Cache<K, V> getCache() {
+    public MongoDBCache<K, V> getCache() {
         return cache;
-    }
-
-    public void setCache(Cache<K, V> cache) {
-        this.cache = cache;
     }
 }
