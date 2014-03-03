@@ -15,10 +15,11 @@ public class MongoDBStoreConfigurationBuilderTest {
     private static final String HOSTNAME = "localhost";
     private static final Integer PORT = 27017;
     private static final String DATABASE = "database";
-    private static final Boolean SECURE = true;
     private static final String COLLECTION = "collection";
     private static final String USERNAME = "username";
     private static final String PASSWORD = "password";
+    private static final Integer TIMEOUT = 1000;
+    private static final Integer ACKNOWLEDGMENT = 10;
 
     @Test
     public void testBuild() {
@@ -31,9 +32,10 @@ public class MongoDBStoreConfigurationBuilderTest {
                 .port(PORT)
                 .database(DATABASE)
                 .collection(COLLECTION)
-                .secure(SECURE)
                 .username(USERNAME)
                 .password(PASSWORD)
+                .acknowledgment(ACKNOWLEDGMENT)
+                .timeout(TIMEOUT)
                 .build();
 
         MongoDBStoreConfiguration configuration = (MongoDBStoreConfiguration) conf.persistence().stores().get(0);
@@ -42,7 +44,6 @@ public class MongoDBStoreConfigurationBuilderTest {
         assertTrue(PORT.equals(configuration.port()));
         assertTrue(DATABASE.equals(configuration.database()));
         assertTrue(COLLECTION.equals(configuration.collection()));
-        assertTrue(SECURE.equals(configuration.secure()));
         assertTrue(USERNAME.equals(configuration.username()));
         assertTrue(PASSWORD.equals(configuration.password()));
     }
