@@ -11,7 +11,7 @@ import java.util.Properties;
 
 /**
  * The configuration of MongoDBStore. <br/>
- * This class is a AbstractStoreConfiguration child
+ * This class wraps all the MongoDB information for the connection.
  *
  * @author Gabriel Francisco <gabfssilva@gmail.com>
  */
@@ -20,21 +20,23 @@ import java.util.Properties;
 public class MongoDBStoreConfiguration extends AbstractStoreConfiguration {
     private String hostname;
     private int port;
+    private int timeout;
+    private int acknowledgment;
     private String database;
     private String collection;
     private String username;
     private String password;
-    private boolean secure;
 
-    public MongoDBStoreConfiguration(boolean purgeOnStartup, boolean fetchPersistentState, boolean ignoreModifications, AsyncStoreConfiguration async, SingletonStoreConfiguration singletonStore, boolean preload, boolean shared, Properties properties, String hostname, int port, String database, String collection, String username, String password, boolean secure) {
+    public MongoDBStoreConfiguration(boolean purgeOnStartup, boolean fetchPersistentState, boolean ignoreModifications, AsyncStoreConfiguration async, SingletonStoreConfiguration singletonStore, boolean preload, boolean shared, Properties properties, String hostname, int port, int timeout, int acknowledgment, String database, String collection, String username, String password) {
         super(purgeOnStartup, fetchPersistentState, ignoreModifications, async, singletonStore, preload, shared, properties);
         this.hostname = hostname;
         this.port = port;
+        this.timeout = timeout;
+        this.acknowledgment = acknowledgment;
         this.database = database;
         this.collection = collection;
         this.username = username;
         this.password = password;
-        this.secure = secure;
     }
 
     public String hostname() {
@@ -61,7 +63,11 @@ public class MongoDBStoreConfiguration extends AbstractStoreConfiguration {
         return password;
     }
 
-    public boolean secure() {
-        return secure;
+    public int acknowledgment() {
+        return acknowledgment;
+    }
+
+    public int timeout() {
+        return timeout;
     }
 }

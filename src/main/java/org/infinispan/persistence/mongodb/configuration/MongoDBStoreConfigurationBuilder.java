@@ -6,7 +6,8 @@ import org.infinispan.configuration.cache.PersistenceConfigurationBuilder;
 
 /**
  * A MongoDBStoreConfiguration Builder. <br/>
- * This class creates a MongoDBStoreConfiguration, wrapping all the connection data to the MongoDB.
+ *
+ * This class creates a MongoDBStoreConfiguration.
  *
  * @author Gabriel Francisco <gabfssilva@gmail.com>
  */
@@ -17,7 +18,8 @@ public class MongoDBStoreConfigurationBuilder extends AbstractStoreConfiguration
     private String collection;
     private String username;
     private String password;
-    private boolean secure;
+    private int timeout;
+    private int acknowledgment;
 
     public MongoDBStoreConfigurationBuilder(PersistenceConfigurationBuilder builder) {
         super(builder);
@@ -26,8 +28,8 @@ public class MongoDBStoreConfigurationBuilder extends AbstractStoreConfiguration
     @Override
     public MongoDBStoreConfiguration create() {
         return new MongoDBStoreConfiguration(purgeOnStartup, fetchPersistentState, ignoreModifications,
-                async.create(), singletonStore.create(), preload, shared, properties, hostname,
-                port, database, collection, username, password, secure);
+                async.create(), singletonStore.create(), preload, shared, properties, hostname, port, timeout,
+                acknowledgment, database, collection, username, password);
     }
 
     @Override
@@ -45,7 +47,8 @@ public class MongoDBStoreConfigurationBuilder extends AbstractStoreConfiguration
         this.collection = template.collection();
         this.username = template.username();
         this.password = template.password();
-        this.secure = template.secure();
+        this.acknowledgment = template.acknowledgment();
+        this.timeout = template.timeout();
 
         return self();
     }
@@ -81,8 +84,13 @@ public class MongoDBStoreConfigurationBuilder extends AbstractStoreConfiguration
         return self();
     }
 
-    public MongoDBStoreConfigurationBuilder secure(boolean secure) {
-        this.secure = secure;
+    public MongoDBStoreConfigurationBuilder timeout(int timeout) {
+        this.timeout = timeout;
+        return self();
+    }
+
+    public MongoDBStoreConfigurationBuilder acknowledgment(int acknowledgment) {
+        this.acknowledgment = acknowledgment;
         return self();
     }
 
