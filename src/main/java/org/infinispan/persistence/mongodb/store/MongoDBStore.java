@@ -112,7 +112,7 @@ public class MongoDBStore<K, V> implements AdvancedLoadWriteStore<K, V> {
                 .keyBytes(toByteArray(entry.getKey()))
                 .valueBytes(toByteArray(entry.getValue()))
                 .metadataBytes(toByteArray(entry.getMetadata()))
-                .expiryTime(new Date(entry.getMetadata().expiryTime()));
+                .expiryTime(entry.getMetadata() != null ? new Date(entry.getMetadata().expiryTime()) : null);
 
         MongoDBEntry<K, V> mongoDBEntry = mongoDBEntryBuilder.create();
 
@@ -153,6 +153,11 @@ public class MongoDBStore<K, V> implements AdvancedLoadWriteStore<K, V> {
 
         MarshalledEntry result = context.getMarshalledEntryFactory().newMarshalledEntry(k, v, metadata);
 
+        if (isExpired(mongoDBEntry, result)){
+            cache.remove(mongoDBEntry.getKeyBytes());
+            return null;
+        }
+
         return result;
     }
 
@@ -165,14 +170,23 @@ public class MongoDBStore<K, V> implements AdvancedLoadWriteStore<K, V> {
 
     @Override
     public void start() {
-        if (configuration.purgeOnStartup()) {
-            clear();
+        synchronized (cache) {
+            if(configuration.purgeOnStartup()){
+                cache.clear();
+            }
         }
     }
 
     @Override
     public void stop() {
+    }
 
+    private boolean isExpired(MongoDBEntry<K, V> mongoDBEntry, MarshalledEntry result) {
+        if(result.getMetadata() == null){
+            return false;
+        }
+
+        return result.getMetadata().isExpired(System.currentTimeMillis());
     }
 
     private Object toObject(byte[] bytes) {

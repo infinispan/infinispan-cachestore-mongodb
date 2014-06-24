@@ -63,7 +63,7 @@ public class MongoDBCacheImpl<K, V> implements MongoDBCache<K, V> {
     public boolean remove(byte[] key) {
         BasicDBObject query = new BasicDBObject();
         query.put("_id", key);
-        return collection.remove(query) != null;
+        return collection.findAndRemove(query) != null;
     }
 
     @Override
@@ -71,11 +71,13 @@ public class MongoDBCacheImpl<K, V> implements MongoDBCache<K, V> {
         BasicDBObject query = new BasicDBObject();
         query.put("_id", key);
 
-        BasicDBObject result = (BasicDBObject) collection.findOne(query);
+        DBCursor cursor = collection.find(query);
 
-        if (result == null) {
+        if(!cursor.hasNext()){
             return null;
         }
+
+        BasicDBObject result = (BasicDBObject) cursor.next();
 
         byte[] k = (byte[]) result.get("_id");
         byte[] v = (byte[]) result.get("value");
@@ -116,7 +118,8 @@ public class MongoDBCacheImpl<K, V> implements MongoDBCache<K, V> {
 
         queryBuilder
                 .put("expiryTime")
-                .lessThanEquals(new Date());
+                .lessThanEquals(new Date())
+                .greaterThan(new Date(-1));
 
         DBObject query = queryBuilder.get();
         collection.remove(query);
@@ -136,6 +139,7 @@ public class MongoDBCacheImpl<K, V> implements MongoDBCache<K, V> {
             query.put("_id", entry.getKeyBytes());
             BasicDBObject target = (BasicDBObject) collection.findOne(query);
             collection.update(target, object);
+            return;
         }
 
         collection.insert(object);
