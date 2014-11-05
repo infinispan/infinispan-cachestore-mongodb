@@ -35,9 +35,31 @@ public class MongoDBCacheImpl<K, V> implements MongoDBCache<K, V> {
                 .connectTimeout(mongoCacheConfiguration.timeout())
                 .writeConcern(new WriteConcern(mongoCacheConfiguration.acknowledgment()));
 
-        ServerAddress serverAddress = new ServerAddress(mongoCacheConfiguration.hostname(), mongoCacheConfiguration.port());
+        /*
+		 * If we need connect to more than one mongod (mongos) server, then must create MongoClient with List<ServerAddress>.
+		 * It is useful to connect to replica set or mongo cluster with more mongos.
+		 * 
+		 * Properties in configuration looks like:
+		 * <property name="hostname">mongo1,mongo2,mongo3</property>
+         * <property name="port">27017,27017,27017</property>
+		 */
+		final String[] hostnames = mongoCacheConfiguration.hostname().split(SEPARATOR);
+		final String[] ports = mongoCacheConfiguration.port().split(SEPARATOR);
+		if (hostnames.length != ports.length) {
+			throw new Exception("Invalid store (host, port) configuration.");
+		}
 
-        mongoClient = new MongoClient(serverAddress, mongoClientOptionsBuilder.build());
+		if (hostnames.length > 1) {
+			final List<ServerAddress> servers = new ArrayList<ServerAddress>();
+			for (int i = 0; i < hostnames.length; i++) {
+				servers.add(new ServerAddress(hostnames[i].trim(), Integer.parseInt(ports[i].trim())));
+			}
+
+			mongoClient = new MongoClient(servers, mongoClientOptionsBuilder.build());
+		} else {
+			final ServerAddress serverAddress = new ServerAddress(hostnames[0], Integer.parseInt(ports[0]));
+			mongoClient = new MongoClient(serverAddress, mongoClientOptionsBuilder.build());
+		}
 
         database = mongoClient.getDB(mongoCacheConfiguration.database());
 
