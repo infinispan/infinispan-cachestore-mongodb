@@ -2,6 +2,7 @@ package org.infinispan.persistence.mongodb.cache;
 
 import org.infinispan.persistence.mongodb.store.MongoDBEntry;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -50,11 +51,12 @@ public interface MongoDBCache<K, V> {
     boolean containsKey(byte[] key);
 
     /**
-     * The Set of keys of the cache
-     *
-     * @return set of keys
+     * Since mongo doesn't support actual paging results,
+     * we have to sort and do a less than on the last id.
+     * @param lastKey
+     * @return
      */
-    Set<byte[]> keySet();
+    List<MongoDBEntry<K, V>> getPagedEntries(byte[] lastKey);
 
     /**
      * This method must remove all data which are expired. <br/>
