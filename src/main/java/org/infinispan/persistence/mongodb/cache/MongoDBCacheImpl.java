@@ -4,9 +4,7 @@ import com.mongodb.*;
 import org.infinispan.persistence.mongodb.configuration.MongoDBStoreConfiguration;
 import org.infinispan.persistence.mongodb.store.MongoDBEntry;
 
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * An implementation of the MongoDBCache interface.
@@ -76,7 +74,14 @@ public class MongoDBCacheImpl<K, V> implements MongoDBCache<K, V> {
         if(!cursor.hasNext()){
             return null;
         }
+        try {
+            return createEntry(cursor);
+        } finally {
+            cursor.close();
+        }
+    }
 
+    private MongoDBEntry<K,V> createEntry(DBCursor cursor) {
         BasicDBObject result = (BasicDBObject) cursor.next();
 
         byte[] k = (byte[]) result.get("_id");
@@ -99,17 +104,30 @@ public class MongoDBCacheImpl<K, V> implements MongoDBCache<K, V> {
     }
 
     @Override
-    public Set<byte[]> keySet() {
-        DBCursor cursor = collection.find();
-        Set<byte[]> keys = new HashSet<byte[]>();
+    public List<MongoDBEntry<K, V>> getPagedEntries(byte[] lastKey) {
+        QueryBuilder queryBuilder = QueryBuilder.start();
 
-        while (cursor.hasNext()) {
-            DBObject o = cursor.next();
-            byte[] key = (byte[]) o.get("_id");
-            keys.add(key);
+        if(lastKey != null) {
+            queryBuilder.put("_id").lessThan(lastKey);
         }
+        DBObject query = queryBuilder.get();
+        DBCursor cursor = collection.find(query).sort(new BasicDBObject("_id", -1)).limit(1000);
 
-        return keys;
+        List<MongoDBEntry<K,V>> entries = getSetFromCursor(cursor);
+        return entries;
+    }
+
+
+    private List<MongoDBEntry<K,V>> getSetFromCursor(DBCursor cursor) {
+        List<MongoDBEntry<K,V>> entries = new ArrayList<MongoDBEntry<K,V>>(cursor.size());
+        try {
+            while (cursor.hasNext()) {
+                entries.add(createEntry(cursor));
+            }
+            return entries;
+        } finally {
+            cursor.close();
+        }
     }
 
     @Override

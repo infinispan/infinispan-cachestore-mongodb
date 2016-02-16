@@ -14,8 +14,7 @@ import org.infinispan.persistence.spi.InitializationContext;
 import org.infinispan.persistence.spi.PersistenceException;
 
 import java.io.IOException;
-import java.util.Date;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 
@@ -46,37 +45,47 @@ public class MongoDBStore<K, V> implements AdvancedLoadWriteStore<K, V> {
     }
 
     @Override
-    public void process(KeyFilter<K> filter, final CacheLoaderTask<K, V> task, Executor executor, boolean fetchValue, boolean fetchMetadata) {
-        Set<byte[]> keys = cache.keySet();
-
+    public void process(final KeyFilter<K> filter, final CacheLoaderTask<K, V> task, Executor executor, boolean fetchValue, boolean fetchMetadata) {
         ExecutorAllCompletionService eacs = new ExecutorAllCompletionService(executor);
         final TaskContextImpl taskContext = new TaskContextImpl();
-        for (byte[] key : keys) {
-            final K marshalledKey = (K) toObject(key);
-            if (filter == null || filter.shouldLoadKey(marshalledKey)) {
-                if (taskContext.isStopped()) {
-                    break;
-                }
+
+        //A while loop since we have to hit the db again for paging.
+        boolean shouldContinue = true;
+        byte[] id = null;
+        while (shouldContinue) {
+            final List<MongoDBEntry<K, V>> entries = cache.getPagedEntries(id);
+            shouldContinue = !entries.isEmpty();
+            if (taskContext.isStopped()) {
+                break;
+            }
+            if(shouldContinue) {
                 eacs.submit(new Callable<Void>() {
                     @Override
                     public Void call() throws Exception {
-                        try {
-                            final MarshalledEntry<K, V> marshalledEntry = load(marshalledKey);
-                            if (marshalledEntry != null) {
-                                task.processEntry(marshalledEntry, taskContext);
+                        for (final MongoDBEntry<K, V> entry : entries) {
+                            if (taskContext.isStopped()) {
+                                break;
                             }
-                            return null;
-                        } catch (Exception e) {
-                            throw e;
+                            final K marshalledKey = (K) toObject(entry.getKeyBytes());
+                            if (filter == null || filter.shouldLoadKey(marshalledKey)) {
+                                final MarshalledEntry<K, V> marshalledEntry = getMarshalledEntry(entry);
+                                if (marshalledEntry != null) {
+                                    task.processEntry(marshalledEntry, taskContext);
+                                }
+                            }
                         }
+                        return null;
                     }
                 });
+                //get last key so we can get more entries.
+                id = entries.get(entries.size() - 1).getKeyBytes();
             }
         }
         eacs.waitUntilAllCompleted();
         if (eacs.isExceptionThrown()) {
             throw new PersistenceException("Execution exception!", eacs.getFirstException());
         }
+
     }
 
     @Override
@@ -140,6 +149,23 @@ public class MongoDBStore<K, V> implements AdvancedLoadWriteStore<K, V> {
             return null;
         }
 
+        return result;
+    }
+
+    private MarshalledEntry<K,V> getMarshalledEntry(MongoDBEntry<K,V> mongoDBEntry) {
+
+        if (mongoDBEntry == null) {
+            return null;
+        }
+
+        K k = mongoDBEntry.getKey(marshaller());
+        V v = mongoDBEntry.getValue(marshaller());
+
+        InternalMetadata metadata;
+
+        metadata = (InternalMetadata) toObject(mongoDBEntry.getMetadataBytes());
+
+        MarshalledEntry result = context.getMarshalledEntryFactory().newMarshalledEntry(k, v, metadata);
         return result;
     }
 
