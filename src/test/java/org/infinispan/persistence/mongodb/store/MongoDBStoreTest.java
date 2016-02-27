@@ -2,12 +2,14 @@ package org.infinispan.persistence.mongodb.store;
 
 import org.infinispan.commons.io.ByteBufferFactoryImpl;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.cache.SingleFileStoreConfigurationBuilder;
 import org.infinispan.marshall.core.MarshalledEntryFactoryImpl;
 import org.infinispan.persistence.BaseStoreTest;
 import org.infinispan.persistence.DummyInitializationContext;
 import org.infinispan.persistence.mongodb.configuration.MongoDBStoreConfiguration;
 import org.infinispan.persistence.mongodb.configuration.MongoDBStoreConfigurationBuilder;
 import org.infinispan.persistence.spi.AdvancedLoadWriteStore;
+import org.infinispan.test.fwk.TestCacheManagerFactory;
 import org.junit.After;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.Test;
@@ -46,9 +48,8 @@ public class MongoDBStoreTest extends BaseStoreTest {
             throw e;
         }
 
-        ConfigurationBuilder builder = new ConfigurationBuilder();
-
-        MongoDBStoreConfiguration configuration = builder
+        ConfigurationBuilder builder = TestCacheManagerFactory.getDefaultCacheConfiguration(false);
+        builder
                 .persistence()
                 .addStore(MongoDBStoreConfigurationBuilder.class)
                 .hostname(hostname)
@@ -56,13 +57,10 @@ public class MongoDBStoreTest extends BaseStoreTest {
                 .database(DATABASE)
                 .collection(COLLECTION)
                 .timeout(1000)
-                .acknowledgment(1)
-                .create();
-
+                .acknowledgment(1).create();
 
         mongoDBStore = new MongoDBStore();
-        mongoDBStore.init(new DummyInitializationContext(configuration, getCache(), getMarshaller(), new ByteBufferFactoryImpl(),
-                new MarshalledEntryFactoryImpl(getMarshaller())));
+        mongoDBStore.init(createContext(builder.build()));
 
         return mongoDBStore;
     }

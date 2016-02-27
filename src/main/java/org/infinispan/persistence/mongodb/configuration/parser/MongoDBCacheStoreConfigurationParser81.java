@@ -22,10 +22,10 @@ import org.infinispan.persistence.mongodb.configuration.MongoDBStoreConfiguratio
  * @author Gabriel Francisco <gabfssilva@gmail.com>
  */
 @Namespaces({
-        @Namespace(uri = "urn:infinispan:config:mongodb:6.0", root = "mongodbStore"),
+        @Namespace(uri = "urn:infinispan:config:mongodb:8.1", root = "mongodbStore"),
         @Namespace(root = "mongodbStore")
 })
-public class MongoDBCacheStoreConfigurationParser60 implements ConfigurationParser {
+public class MongoDBCacheStoreConfigurationParser81 implements ConfigurationParser {
 
     @Override
     public void readElement(XMLExtendedStreamReader xmlExtendedStreamReader, ConfigurationBuilderHolder configurationBuilderHolder)
@@ -46,6 +46,11 @@ public class MongoDBCacheStoreConfigurationParser60 implements ConfigurationPars
                 throw ParseUtils.unexpectedElement(xmlExtendedStreamReader);
             }
         }
+    }
+
+    @Override
+    public Namespace[] getNamespaces() {
+        return ParseUtils.getNamespaceAnnotations(getClass());
     }
 
     private void parseMongoDBStore(XMLExtendedStreamReader reader, PersistenceConfigurationBuilder persistenceConfigurationBuilder, ClassLoader classLoader)

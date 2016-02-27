@@ -16,12 +16,12 @@ import java.io.InputStream;
 import static org.infinispan.test.TestingUtil.INFINISPAN_START_TAG_NO_SCHEMA;
 
 /**
- * Test for MongoDBCacheStoreConfigurationParser60Test
+ * Test for MongoDBCacheStoreConfigurationParser80Test
  *
  * @author Gabriel Francisco <gabfssilva@gmail.com>
  */
-@Test(groups = "unit", testName = "persistence.mongodb.configuration.parser.MongoDBCacheStoreConfigurationParser60Test")
-public class MongoDBCacheStoreConfigurationParser60Test extends AbstractInfinispanTest {
+@Test(groups = "unit", testName = "persistence.mongodb.configuration.parser.MongoDBCacheStoreConfigurationParser80Test")
+public class MongoDBCacheStoreConfigurationParser80Test extends AbstractInfinispanTest {
     private EmbeddedCacheManager cacheManager;
 
     @AfterMethod(alwaysRun = true)
