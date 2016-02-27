@@ -2,8 +2,10 @@ package org.infinispan.persistence.mongodb.configuration;
 
 import org.infinispan.commons.configuration.BuiltBy;
 import org.infinispan.commons.configuration.ConfigurationFor;
+import org.infinispan.commons.configuration.attributes.AttributeSet;
 import org.infinispan.configuration.cache.AbstractStoreConfiguration;
 import org.infinispan.configuration.cache.AsyncStoreConfiguration;
+import org.infinispan.configuration.cache.SingleFileStoreConfiguration;
 import org.infinispan.configuration.cache.SingletonStoreConfiguration;
 import org.infinispan.persistence.mongodb.store.MongoDBStore;
 
@@ -27,8 +29,9 @@ public class MongoDBStoreConfiguration extends AbstractStoreConfiguration {
     private String username;
     private String password;
 
-    public MongoDBStoreConfiguration(boolean purgeOnStartup, boolean fetchPersistentState, boolean ignoreModifications, AsyncStoreConfiguration async, SingletonStoreConfiguration singletonStore, boolean preload, boolean shared, Properties properties, String hostname, int port, int timeout, int acknowledgment, String database, String collection, String username, String password) {
-        super(purgeOnStartup, fetchPersistentState, ignoreModifications, async, singletonStore, preload, shared, properties);
+    public MongoDBStoreConfiguration(AttributeSet attributes, AsyncStoreConfiguration async,
+                                     SingletonStoreConfiguration singletonStore, String hostname, int port, int timeout, int acknowledgment, String database, String collection, String username, String password) {
+        super(attributes, async, singletonStore);
         this.hostname = hostname;
         this.port = port;
         this.timeout = timeout;
@@ -69,5 +72,15 @@ public class MongoDBStoreConfiguration extends AbstractStoreConfiguration {
 
     public int timeout() {
         return timeout;
+    }
+
+    public static AttributeSet attributeDefinitionSet() {
+        return new AttributeSet(
+                MongoDBStoreConfiguration.class, AbstractStoreConfiguration.attributeDefinitionSet());
+    }
+
+    @Override
+    public AttributeSet attributes() {
+        return attributes;
     }
 }

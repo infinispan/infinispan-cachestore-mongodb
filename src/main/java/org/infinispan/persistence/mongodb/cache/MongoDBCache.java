@@ -1,6 +1,8 @@
 package org.infinispan.persistence.mongodb.cache;
 
+import com.mongodb.DBCursor;
 import org.infinispan.persistence.mongodb.store.MongoDBEntry;
+import org.infinispan.util.TimeService;
 
 import java.util.List;
 import java.util.Set;
@@ -62,7 +64,7 @@ public interface MongoDBCache<K, V> {
      * This method must remove all data which are expired. <br/>
      * What means delete all entries that have the expiryTime parameter less than the current date.
      */
-    void removeExpiredData();
+    List<MongoDBEntry<K, V>> removeExpiredData(byte[] lastKey);
 
     /**
      * Put an entry to the cache

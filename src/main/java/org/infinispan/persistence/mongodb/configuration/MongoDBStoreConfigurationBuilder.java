@@ -1,5 +1,7 @@
 package org.infinispan.persistence.mongodb.configuration;
 
+import org.infinispan.commons.configuration.attributes.AttributeSet;
+import org.infinispan.configuration.cache.AbstractStoreConfiguration;
 import org.infinispan.configuration.cache.AbstractStoreConfigurationBuilder;
 import org.infinispan.configuration.cache.PersistenceConfigurationBuilder;
 
@@ -21,22 +23,17 @@ public class MongoDBStoreConfigurationBuilder extends AbstractStoreConfiguration
     private int acknowledgment;
 
     public MongoDBStoreConfigurationBuilder(PersistenceConfigurationBuilder builder) {
-        super(builder);
+        super(builder, MongoDBStoreConfiguration.attributeDefinitionSet());
     }
 
     @Override
     public MongoDBStoreConfiguration create() {
-        return new MongoDBStoreConfiguration(purgeOnStartup, fetchPersistentState, ignoreModifications,
-                async.create(), singletonStore.create(), preload, shared, properties, hostname, port, timeout,
+        return new MongoDBStoreConfiguration(attributes.protect(), async.create(), singletonStore.create(), hostname, port, timeout,
                 acknowledgment, database, collection, username, password);
     }
 
     @Override
     public MongoDBStoreConfigurationBuilder read(MongoDBStoreConfiguration template) {
-        this.fetchPersistentState = template.fetchPersistentState();
-        this.ignoreModifications = template.ignoreModifications();
-        this.properties = template.properties();
-        this.purgeOnStartup = template.purgeOnStartup();
         this.async.read(template.async());
         this.singletonStore.read(template.singletonStore());
 

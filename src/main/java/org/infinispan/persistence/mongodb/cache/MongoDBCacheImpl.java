@@ -3,6 +3,7 @@ package org.infinispan.persistence.mongodb.cache;
 import com.mongodb.*;
 import org.infinispan.persistence.mongodb.configuration.MongoDBStoreConfiguration;
 import org.infinispan.persistence.mongodb.store.MongoDBEntry;
+import org.infinispan.util.TimeService;
 
 import java.util.*;
 
@@ -18,11 +19,15 @@ public class MongoDBCacheImpl<K, V> implements MongoDBCache<K, V> {
     private MongoClient mongoClient;
     private DB database;
     private DBCollection collection;
+    private final TimeService timeService;
 
     private MongoDBStoreConfiguration mongoCacheConfiguration;
 
-    public MongoDBCacheImpl(MongoDBStoreConfiguration mongoCacheConfiguration) throws Exception {
+    private static final int pagingSize = 1024;
+
+    public MongoDBCacheImpl(MongoDBStoreConfiguration mongoCacheConfiguration, TimeService timeService) throws Exception {
         this.mongoCacheConfiguration = mongoCacheConfiguration;
+        this.timeService = timeService;
         init();
     }
 
@@ -98,7 +103,6 @@ public class MongoDBCacheImpl<K, V> implements MongoDBCache<K, V> {
         return mongoDBEntryBuilder.create();
     }
 
-    @Override
     public boolean containsKey(byte[] key) {
         return get(key) != null;
     }
@@ -111,15 +115,15 @@ public class MongoDBCacheImpl<K, V> implements MongoDBCache<K, V> {
             queryBuilder.put("_id").lessThan(lastKey);
         }
         DBObject query = queryBuilder.get();
-        DBCursor cursor = collection.find(query).sort(new BasicDBObject("_id", -1)).limit(1000);
+        DBCursor cursor = collection.find(query).sort(new BasicDBObject("_id", -1)).limit(pagingSize);
 
-        List<MongoDBEntry<K,V>> entries = getSetFromCursor(cursor);
+        List<MongoDBEntry<K,V>> entries = getListFromCursor(cursor);
         return entries;
     }
 
 
-    private List<MongoDBEntry<K,V>> getSetFromCursor(DBCursor cursor) {
-        List<MongoDBEntry<K,V>> entries = new ArrayList<MongoDBEntry<K,V>>(cursor.size());
+    private List<MongoDBEntry<K,V>> getListFromCursor(DBCursor cursor) {
+        List<MongoDBEntry<K,V>> entries = new ArrayList<>(cursor.size());
         try {
             while (cursor.hasNext()) {
                 entries.add(createEntry(cursor));
@@ -131,16 +135,27 @@ public class MongoDBCacheImpl<K, V> implements MongoDBCache<K, V> {
     }
 
     @Override
-    public void removeExpiredData() {
+    public List<MongoDBEntry<K, V>> removeExpiredData(byte[] lastKey) {
         QueryBuilder queryBuilder = QueryBuilder.start();
+
+        long time = timeService.wallClockTime();
 
         queryBuilder
                 .put("expiryTime")
-                .lessThanEquals(new Date())
+                .lessThanEquals(new Date(time))
                 .greaterThan(new Date(-1));
 
+        if(lastKey != null) {
+            queryBuilder.put("_id").lessThan(lastKey);
+        }
+
         DBObject query = queryBuilder.get();
+        List<MongoDBEntry<K, V>> listOfExpiredEntries;
+        try(DBCursor cursor = collection.find(query).sort(new BasicDBObject("_id", -1)).limit(pagingSize)) {
+            listOfExpiredEntries = getListFromCursor(cursor);
+        }
         collection.remove(query);
+        return listOfExpiredEntries;
     }
 
     @Override

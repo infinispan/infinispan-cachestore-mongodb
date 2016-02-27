@@ -1,8 +1,10 @@
 package org.infinispan.persistence.mongodb.store;
 
+import com.mongodb.DBCursor;
 import net.jcip.annotations.ThreadSafe;
 import org.infinispan.commons.marshall.StreamingMarshaller;
 import org.infinispan.executors.ExecutorAllCompletionService;
+import org.infinispan.filter.KeyFilter;
 import org.infinispan.marshall.core.MarshalledEntry;
 import org.infinispan.metadata.InternalMetadata;
 import org.infinispan.persistence.TaskContextImpl;
@@ -15,7 +17,6 @@ import org.infinispan.persistence.spi.PersistenceException;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Executor;
 
 /**
@@ -38,14 +39,14 @@ public class MongoDBStore<K, V> implements AdvancedLoadWriteStore<K, V> {
         context = ctx;
         configuration = ctx.getConfiguration();
         try {
-            cache = new MongoDBCacheImpl<K, V>(configuration);
+            cache = new MongoDBCacheImpl<>(configuration, ctx.getTimeService());
         } catch (Exception e) {
             throw new PersistenceException(e);
         }
     }
 
     @Override
-    public void process(final KeyFilter<K> filter, final CacheLoaderTask<K, V> task, Executor executor, boolean fetchValue, boolean fetchMetadata) {
+    public void process(final KeyFilter<? super K> filter, final CacheLoaderTask<K, V> task, Executor executor, boolean fetchValue, boolean fetchMetadata) {
         ExecutorAllCompletionService eacs = new ExecutorAllCompletionService(executor);
         final TaskContextImpl taskContext = new TaskContextImpl();
 
@@ -58,24 +59,21 @@ public class MongoDBStore<K, V> implements AdvancedLoadWriteStore<K, V> {
             if (taskContext.isStopped()) {
                 break;
             }
-            if(shouldContinue) {
-                eacs.submit(new Callable<Void>() {
-                    @Override
-                    public Void call() throws Exception {
-                        for (final MongoDBEntry<K, V> entry : entries) {
-                            if (taskContext.isStopped()) {
-                                break;
-                            }
-                            final K marshalledKey = (K) toObject(entry.getKeyBytes());
-                            if (filter == null || filter.shouldLoadKey(marshalledKey)) {
-                                final MarshalledEntry<K, V> marshalledEntry = getMarshalledEntry(entry);
-                                if (marshalledEntry != null) {
-                                    task.processEntry(marshalledEntry, taskContext);
-                                }
+            if (shouldContinue) {
+                eacs.submit(() -> {
+                    for (final MongoDBEntry<K, V> entry : entries) {
+                        if (taskContext.isStopped()) {
+                            break;
+                        }
+                        final K marshalledKey = (K) toObject(entry.getKeyBytes());
+                        if (filter == null || filter.accept(marshalledKey)) {
+                            final MarshalledEntry<K, V> marshalledEntry = getMarshalledEntry(entry);
+                            if (marshalledEntry != null) {
+                                task.processEntry(marshalledEntry, taskContext);
                             }
                         }
-                        return null;
                     }
+                    return null;
                 });
                 //get last key so we can get more entries.
                 id = entries.get(entries.size() - 1).getKeyBytes();
@@ -100,11 +98,21 @@ public class MongoDBStore<K, V> implements AdvancedLoadWriteStore<K, V> {
 
     @Override
     public void purge(Executor threadPool, PurgeListener listener) {
-        cache.removeExpiredData();
+
+        byte[] lastKey = null;
+        boolean shouldContinue = true;
+        while (shouldContinue) {
+            List<MongoDBEntry<K, V>> expired = cache.removeExpiredData(lastKey);
+            expired.forEach(kvMongoDBEntry -> listener.entryPurged(kvMongoDBEntry.getKey(marshaller())));
+            shouldContinue = !expired.isEmpty();
+            if (shouldContinue) {
+                lastKey = expired.get(expired.size() - 1).getKeyBytes();
+            }
+        }
     }
 
     @Override
-    public void write(MarshalledEntry<K, V> entry) {
+    public void write(MarshalledEntry<? extends K,? extends V> entry) {
         MongoDBEntry.Builder<K, V> mongoDBEntryBuilder = MongoDBEntry.builder();
 
         mongoDBEntryBuilder
@@ -119,16 +127,17 @@ public class MongoDBStore<K, V> implements AdvancedLoadWriteStore<K, V> {
     }
 
     @Override
-    public boolean delete(K key) {
+    public boolean delete(Object key) {
         return cache.remove(toByteArray(key));
     }
 
+
     @Override
-    public MarshalledEntry<K, V> load(K key) {
+    public MarshalledEntry<K, V> load(Object key) {
         return load(key, false);
     }
 
-    private MarshalledEntry<K, V> load(K key, boolean binaryData) {
+    private MarshalledEntry<K, V> load(Object key, boolean binaryData) {
         MongoDBEntry<K, V> mongoDBEntry = cache.get(toByteArray(key));
 
         if (mongoDBEntry == null) {
@@ -138,14 +147,13 @@ public class MongoDBStore<K, V> implements AdvancedLoadWriteStore<K, V> {
         K k = mongoDBEntry.getKey(marshaller());
         V v = mongoDBEntry.getValue(marshaller());
 
-        InternalMetadata metadata = null;
+        InternalMetadata metadata;
 
         metadata = (InternalMetadata) toObject(mongoDBEntry.getMetadataBytes());
 
         MarshalledEntry result = context.getMarshalledEntryFactory().newMarshalledEntry(k, v, metadata);
 
-        if (isExpired(mongoDBEntry, result)) {
-            cache.remove(mongoDBEntry.getKeyBytes());
+        if (isExpired(result)) {
             return null;
         }
 
@@ -170,8 +178,13 @@ public class MongoDBStore<K, V> implements AdvancedLoadWriteStore<K, V> {
     }
 
     @Override
-    public boolean contains(K key) {
-        return cache.containsKey(toByteArray(key));
+    public boolean contains(Object key) {
+        MongoDBEntry<K, V> mongoDBEntry = cache.get(toByteArray(key));
+        MarshalledEntry result = getMarshalledEntry(mongoDBEntry);
+        if(mongoDBEntry == null || isExpired(result)) {
+            return false;
+        }
+        return true;
     }
 
     @Override
@@ -185,12 +198,12 @@ public class MongoDBStore<K, V> implements AdvancedLoadWriteStore<K, V> {
     public void stop() {
     }
 
-    private boolean isExpired(MongoDBEntry<K, V> mongoDBEntry, MarshalledEntry result) {
+    private boolean isExpired(MarshalledEntry result) {
         if (result.getMetadata() == null) {
             return false;
         }
 
-        return result.getMetadata().isExpired(System.currentTimeMillis());
+        return result.getMetadata().isExpired(context.getTimeService().wallClockTime());
     }
 
     private Object toObject(byte[] bytes) {
