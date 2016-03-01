@@ -1,6 +1,5 @@
 package org.infinispan.persistence.mongodb.store;
 
-import com.mongodb.DBCursor;
 import net.jcip.annotations.ThreadSafe;
 import org.infinispan.commons.marshall.StreamingMarshaller;
 import org.infinispan.executors.ExecutorAllCompletionService;
