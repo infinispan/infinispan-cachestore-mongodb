@@ -5,6 +5,7 @@ import org.infinispan.persistence.mongodb.configuration.MongoDBStoreConfiguratio
 import org.infinispan.persistence.mongodb.store.MongoDBEntry;
 import org.infinispan.util.TimeService;
 
+import java.net.UnknownHostException;
 import java.util.*;
 
 /**
@@ -32,6 +33,10 @@ public class MongoDBCacheImpl<K, V> implements MongoDBCache<K, V> {
     }
 
     private void init() throws Exception {
+       start();
+    }
+
+    public void start() throws Exception {
         MongoClientOptions.Builder mongoClientOptionsBuilder = MongoClientOptions.builder();
 
         mongoClientOptionsBuilder
