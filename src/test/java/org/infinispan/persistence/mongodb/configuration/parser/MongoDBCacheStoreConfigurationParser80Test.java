@@ -31,15 +31,17 @@ public class MongoDBCacheStoreConfigurationParser80Test extends AbstractInfinisp
 
     public void testMongoDBCacheStore() throws Exception {
         String config = INFINISPAN_START_TAG_NO_SCHEMA + "\n" +
-                "   <default>\n" +
-                "     <persistence>\n" +
-                "       <mongodbStore xmlns=\"urn:infinispan:config:mongodb:6.0\" >\n" +
-                "         <connection hostname=\"localhost\" port=\"27017\" timeout=\"2000\" acknowledgment=\"0\"/>\n" +
-                "		  <authentication username=\"mongoUser\" password=\"mongoPass\" />\n" +
-                "		  <storage database=\"infinispan_test_database\" collection=\"infispan_cachestore\" />\n" +
-                "       </mongodbStore>\n" +
-                "     </persistence>\n" +
-                "   </default>\n" +
+                "   <cache-container default-cache=\"defaultCache\">\n" +
+                "     <local-cache name=\"defaultCache\">\n" +
+                "       <persistence>\n" +
+                "         <mongodbStore xmlns=\"urn:infinispan:config:mongodb:8.1\" >\n" +
+                "           <connection hostname=\"localhost\" port=\"27017\" timeout=\"2000\" acknowledgment=\"0\"/>\n" +
+                "		    <authentication username=\"mongoUser\" password=\"mongoPass\" />\n" +
+                "		    <storage database=\"infinispan_test_database\" collection=\"infispan_cachestore\" />\n" +
+                "         </mongodbStore>\n" +
+                "       </persistence>\n" +
+                "     </local-cache>\n" +
+                "   </cache-container>\n" +
                 TestingUtil.INFINISPAN_END_TAG;
 
         MongoDBStoreConfiguration store = (MongoDBStoreConfiguration) buildCacheManagerWithCacheStore(config);
