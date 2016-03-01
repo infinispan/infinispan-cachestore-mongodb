@@ -1,4 +1,4 @@
-# Infinispan MongoDB Cache Store
+# Infinispan MongoDB Cache Store [![Build Status](https://travis-ci.org/infinispan/infinispan-cachestore-mongodb.svg?branch=master)](https://travis-ci.org/infinispan/infinispan-cachestore-mongodb/)
 
 ## Documentation
 For more information, please refer to [the documentation of this cache store](documentation/src/main/asciidoc/index.adoc).
