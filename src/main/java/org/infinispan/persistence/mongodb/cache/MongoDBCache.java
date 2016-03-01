@@ -73,6 +73,8 @@ public interface MongoDBCache<K, V> {
      */
     void put(MongoDBEntry<K, V> entry);
 
+    void start() throws Exception;
+
     /***
      *
      */

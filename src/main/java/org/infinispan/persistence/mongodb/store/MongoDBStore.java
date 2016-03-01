@@ -188,6 +188,11 @@ public class MongoDBStore<K, V> implements AdvancedLoadWriteStore<K, V> {
 
     @Override
     public void start() {
+        try {
+            cache.start();
+        } catch (Exception e) {
+            throw new PersistenceException(e);
+        }
         if (configuration.purgeOnStartup()) {
             cache.clear();
         }
@@ -195,6 +200,7 @@ public class MongoDBStore<K, V> implements AdvancedLoadWriteStore<K, V> {
 
     @Override
     public void stop() {
+
         cache.stop();
     }
 
