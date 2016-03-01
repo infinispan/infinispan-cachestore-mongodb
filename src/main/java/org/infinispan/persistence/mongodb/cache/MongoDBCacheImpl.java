@@ -74,15 +74,11 @@ public class MongoDBCacheImpl<K, V> implements MongoDBCache<K, V> {
         BasicDBObject query = new BasicDBObject();
         query.put("_id", key);
 
-        DBCursor cursor = collection.find(query);
-
-        if(!cursor.hasNext()){
-            return null;
-        }
-        try {
+        try (DBCursor cursor = collection.find(query)){
+            if(!cursor.hasNext()){
+                return null;
+            }
             return createEntry(cursor);
-        } finally {
-            cursor.close();
         }
     }
 
@@ -176,5 +172,10 @@ public class MongoDBCacheImpl<K, V> implements MongoDBCache<K, V> {
         }
 
         collection.insert(object);
+    }
+
+    @Override
+    public void stop() {
+        mongoClient.close();
     }
 }

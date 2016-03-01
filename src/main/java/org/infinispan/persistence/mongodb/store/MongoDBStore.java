@@ -196,6 +196,7 @@ public class MongoDBStore<K, V> implements AdvancedLoadWriteStore<K, V> {
 
     @Override
     public void stop() {
+        cache.stop();
     }
 
     private boolean isExpired(MarshalledEntry result) {

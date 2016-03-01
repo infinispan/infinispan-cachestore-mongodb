@@ -72,4 +72,9 @@ public interface MongoDBCache<K, V> {
      * @param entry
      */
     void put(MongoDBEntry<K, V> entry);
+
+    /***
+     *
+     */
+    void stop();
 }
