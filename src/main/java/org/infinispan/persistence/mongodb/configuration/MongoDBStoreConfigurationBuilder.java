@@ -36,6 +36,7 @@ public class MongoDBStoreConfigurationBuilder extends AbstractStoreConfiguration
     public MongoDBStoreConfigurationBuilder read(MongoDBStoreConfiguration template) {
         this.async.read(template.async());
         this.singletonStore.read(template.singletonStore());
+        this.preload = template.preload();
 
         this.hostname = template.hostname();
         this.port = template.port();
