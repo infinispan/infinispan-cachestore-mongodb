@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<xs:schema attributeFormDefault="unqualified"
+<xs:schema xmlns:tns="urn:infinispan:config:mongodb:8.1"
+           xmlns:config="urn:infinispan:config:8.1"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           attributeFormDefault="unqualified"
            elementFormDefault="qualified"
            version="1.0"
-           targetNamespace="urn:infinispan:config:mongodb:8.1"
-           xmlns:tns="urn:infinispan:config:mongodb:8.1"
-           xmlns:config="urn:infinispan:config:8.1"
-           xmlns:xs="http://www.w3.org/2001/XMLSchema">
+           targetNamespace="urn:infinispan:config:mongodb:8.1">
     <xs:import namespace="urn:infinispan:config:8.1"
                schemaLocation="http://infinispan.org/schemas/infinispan-config-8.1.xsd"/>
 

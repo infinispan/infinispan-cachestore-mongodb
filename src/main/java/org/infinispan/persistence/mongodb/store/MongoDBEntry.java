@@ -11,108 +11,108 @@ import java.util.Date;
  * @author Gabriel Francisco <gabfssilva@gmail.com>
  */
 public class MongoDBEntry<K, V> {
-    private K key;
-    private V value;
+   private K key;
+   private V value;
 
-    private byte[] keyBytes;
-    private byte[] valueBytes;
-    private byte[] metadataBytes;
+   private byte[] keyBytes;
+   private byte[] valueBytes;
+   private byte[] metadataBytes;
 
-    private Date expiryTime;
+   private Date expiryTime;
 
-    public MongoDBEntry(byte[] keyBytes, byte[] valueBytes, byte[] metadataBytes, Date expiryTime) {
-        this.keyBytes = keyBytes;
-        this.valueBytes = valueBytes;
-        this.metadataBytes = metadataBytes;
-        this.expiryTime = expiryTime;
-    }
+   public MongoDBEntry(byte[] keyBytes, byte[] valueBytes, byte[] metadataBytes, Date expiryTime) {
+      this.keyBytes = keyBytes;
+      this.valueBytes = valueBytes;
+      this.metadataBytes = metadataBytes;
+      this.expiryTime = expiryTime;
+   }
 
-    public static <K,V> Builder<K,V> builder() {
-        return new Builder<>();
-    }
+   public static <K, V> Builder<K, V> builder() {
+      return new Builder<>();
+   }
 
-    public byte[] getKeyBytes() {
-        return keyBytes;
-    }
+   public byte[] getKeyBytes() {
+      return keyBytes;
+   }
 
-    public void setKeyBytes(byte[] keyBytes) {
-        this.keyBytes = keyBytes;
-    }
+   public void setKeyBytes(byte[] keyBytes) {
+      this.keyBytes = keyBytes;
+   }
 
-    public byte[] getValueBytes() {
-        return valueBytes;
-    }
+   public byte[] getValueBytes() {
+      return valueBytes;
+   }
 
-    public void setValueBytes(byte[] valueBytes) {
-        this.valueBytes = valueBytes;
-    }
+   public void setValueBytes(byte[] valueBytes) {
+      this.valueBytes = valueBytes;
+   }
 
-    public byte[] getMetadataBytes() {
-        return metadataBytes;
-    }
+   public byte[] getMetadataBytes() {
+      return metadataBytes;
+   }
 
-    public void setMetadataBytes(byte[] metadataBytes) {
-        this.metadataBytes = metadataBytes;
-    }
+   public void setMetadataBytes(byte[] metadataBytes) {
+      this.metadataBytes = metadataBytes;
+   }
 
-    public Date getExpiryTime() {
-        return expiryTime;
-    }
+   public Date getExpiryTime() {
+      return expiryTime;
+   }
 
-    public void setExpiryTime(Date expiryTime) {
-        this.expiryTime = expiryTime;
-    }
+   public void setExpiryTime(Date expiryTime) {
+      this.expiryTime = expiryTime;
+   }
 
-    public K getKey(Marshaller marshaller) {
-        try {
-            return (K) marshaller.objectFromByteBuffer(keyBytes);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
+   public K getKey(Marshaller marshaller) {
+      try {
+         return (K) marshaller.objectFromByteBuffer(keyBytes);
+      } catch (Exception e) {
+         e.printStackTrace();
+      }
+      return null;
+   }
 
-    public V getValue(Marshaller marshaller) {
-        try {
-            return (V) marshaller.objectFromByteBuffer(valueBytes);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
+   public V getValue(Marshaller marshaller) {
+      try {
+         return (V) marshaller.objectFromByteBuffer(valueBytes);
+      } catch (Exception e) {
+         e.printStackTrace();
+      }
+      return null;
+   }
 
-    public static class Builder<K, V> {
-        private byte[] keyBytes;
-        private byte[] valueBytes;
-        private byte[] metadataBytes;
+   public static class Builder<K, V> {
+      private byte[] keyBytes;
+      private byte[] valueBytes;
+      private byte[] metadataBytes;
 
-        private Date expiryTime;
+      private Date expiryTime;
 
-        private Builder() {
-        }
+      private Builder() {
+      }
 
-        public Builder<K, V> keyBytes(byte[] keyBytes) {
-            this.keyBytes = keyBytes;
-            return this;
-        }
+      public Builder<K, V> keyBytes(byte[] keyBytes) {
+         this.keyBytes = keyBytes;
+         return this;
+      }
 
-        public Builder<K, V> valueBytes(byte[] valueBytes) {
-            this.valueBytes = valueBytes;
-            return this;
-        }
+      public Builder<K, V> valueBytes(byte[] valueBytes) {
+         this.valueBytes = valueBytes;
+         return this;
+      }
 
-        public Builder<K, V> metadataBytes(byte[] metadataBytes) {
-            this.metadataBytes = metadataBytes;
-            return this;
-        }
+      public Builder<K, V> metadataBytes(byte[] metadataBytes) {
+         this.metadataBytes = metadataBytes;
+         return this;
+      }
 
-        public Builder<K, V> expiryTime(Date expiryTime) {
-            this.expiryTime = expiryTime;
-            return this;
-        }
+      public Builder<K, V> expiryTime(Date expiryTime) {
+         this.expiryTime = expiryTime;
+         return this;
+      }
 
-        public MongoDBEntry<K, V> create() {
-            return new MongoDBEntry<>(keyBytes, valueBytes, metadataBytes, expiryTime);
-        }
-    }
+      public MongoDBEntry<K, V> create() {
+         return new MongoDBEntry<>(keyBytes, valueBytes, metadataBytes, expiryTime);
+      }
+   }
 }

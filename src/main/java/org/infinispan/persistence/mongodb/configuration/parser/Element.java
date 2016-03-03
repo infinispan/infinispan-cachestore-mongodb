@@ -10,43 +10,42 @@ import java.util.Map;
  * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
  */
 public enum Element {
-    UNKNOWN(null),
-    MONGODB_STORE("mongodbStore"),
-    CONNECTION("connection"),
-    AUTHENTICATION("authentication"),
-    STORAGE("storage");
+   UNKNOWN(null),
+   MONGODB_STORE("mongodbStore"),
+   CONNECTION("connection"),
+   AUTHENTICATION("authentication"),
+   STORAGE("storage");
 
-    private final String name;
+   private static final Map<String, Element> elements;
 
+   static {
+      final Map<String, Element> map = new HashMap<String, Element>(8);
+      for (Element element : values()) {
+         final String name = element.getName();
+         if (name != null) {
+            map.put(name, element);
+         }
+      }
+      elements = map;
+   }
 
-    Element(final String name) {
-        this.name = name;
-    }
+   private final String name;
 
-    /**
-     * Get the name of the current element
-     *
-     * @return the name
-     */
-    public String getName() {
-        return name;
-    }
+   Element(final String name) {
+      this.name = name;
+   }
 
-    private static final Map<String, Element> elements;
+   public static Element forName(final String localName) {
+      final Element element = elements.get(localName);
+      return element == null ? UNKNOWN : element;
+   }
 
-    static {
-        final Map<String, Element> map = new HashMap<String, Element>(8);
-        for (Element element : values()) {
-            final String name = element.getName();
-            if (name != null) {
-                map.put(name, element);
-            }
-        }
-        elements = map;
-    }
-
-    public static Element forName(final String localName) {
-        final Element element = elements.get(localName);
-        return element == null ? UNKNOWN : element;
-    }
+   /**
+    * Get the name of the current element
+    *
+    * @return the name
+    */
+   public String getName() {
+      return name;
+   }
 }
