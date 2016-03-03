@@ -1,6 +1,11 @@
 package org.infinispan.persistence.mongodb.cache;
 
-import com.mongodb.*;
+import com.mongodb.BasicDBObject;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientOptions;
+import com.mongodb.MongoCredential;
+import com.mongodb.ServerAddress;
+import com.mongodb.WriteConcern;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
@@ -25,151 +30,148 @@ import static com.mongodb.client.model.Sorts.descending;
  *
  * @param <K> - key
  * @param <V> - value
- *
  * @author Gabriel Francisco <gabfssilva@gmail.com>
  * @author gustavonalle
  */
 public class MongoDBCacheImpl<K, V> implements MongoDBCache<K, V> {
-    private MongoClient mongoClient;
-    private MongoCollection<Document> collection;
-    private final TimeService timeService;
+   private static final int pagingSize = 1024;
+   private final TimeService timeService;
+   private MongoClient mongoClient;
+   private MongoCollection<Document> collection;
+   private MongoDBStoreConfiguration mongoCacheConfiguration;
 
-    private MongoDBStoreConfiguration mongoCacheConfiguration;
+   public MongoDBCacheImpl(MongoDBStoreConfiguration mongoCacheConfiguration, TimeService timeService) throws Exception {
+      this.mongoCacheConfiguration = mongoCacheConfiguration;
+      this.timeService = timeService;
+      init();
+   }
 
-    private static final int pagingSize = 1024;
+   private void init() throws Exception {
+      start();
+   }
 
-    public MongoDBCacheImpl(MongoDBStoreConfiguration mongoCacheConfiguration, TimeService timeService) throws Exception {
-        this.mongoCacheConfiguration = mongoCacheConfiguration;
-        this.timeService = timeService;
-        init();
-    }
+   public void start() throws Exception {
+      MongoClientOptions.Builder mongoClientOptionsBuilder = MongoClientOptions.builder();
 
-    private void init() throws Exception {
-       start();
-    }
+      mongoClientOptionsBuilder
+              .connectTimeout(mongoCacheConfiguration.timeout())
+              .writeConcern(new WriteConcern(mongoCacheConfiguration.acknowledgment()));
 
-    public void start() throws Exception {
-        MongoClientOptions.Builder mongoClientOptionsBuilder = MongoClientOptions.builder();
+      ServerAddress serverAddress = new ServerAddress(mongoCacheConfiguration.hostname(), mongoCacheConfiguration.port());
 
-        mongoClientOptionsBuilder
-                .connectTimeout(mongoCacheConfiguration.timeout())
-                .writeConcern(new WriteConcern(mongoCacheConfiguration.acknowledgment()));
+      String databaseName = mongoCacheConfiguration.database();
 
-        ServerAddress serverAddress = new ServerAddress(mongoCacheConfiguration.hostname(), mongoCacheConfiguration.port());
+      String username = mongoCacheConfiguration.username();
+      String password = mongoCacheConfiguration.password();
+      if (!"".equals(username) && password != null) {
+         MongoCredential credential = MongoCredential.createCredential(username, databaseName, password.toCharArray());
+         this.mongoClient = new MongoClient(serverAddress, Collections.singletonList(credential), mongoClientOptionsBuilder.build());
+      } else {
+         this.mongoClient = new MongoClient(serverAddress, mongoClientOptionsBuilder.build());
+      }
+      MongoDatabase database = mongoClient.getDatabase(databaseName);
 
-        String databaseName = mongoCacheConfiguration.database();
+      collection = database.getCollection(mongoCacheConfiguration.collection());
+   }
 
-        String username = mongoCacheConfiguration.username();
-        String password = mongoCacheConfiguration.password();
-        if (!"".equals(username) && password != null) {
-            MongoCredential credential = MongoCredential.createCredential(username, databaseName, password.toCharArray());
-            this.mongoClient = new MongoClient(serverAddress, Collections.singletonList(credential), mongoClientOptionsBuilder.build());
-        } else {
-            this.mongoClient = new MongoClient(serverAddress, mongoClientOptionsBuilder.build());
-        }
-        MongoDatabase database = mongoClient.getDatabase(databaseName);
-
-        collection = database.getCollection(mongoCacheConfiguration.collection());
-    }
-
-    @Override
-    public int size() {
-        return (int) collection.count();
-    }
+   @Override
+   public int size() {
+      return (int) collection.count();
+   }
 
 
-    @Override
-    public void clear() {
-        collection.drop();
-    }
+   @Override
+   public void clear() {
+      collection.drop();
+   }
 
-    @Override
-    public boolean remove(byte[] key) {
-        BasicDBObject query = new BasicDBObject();
-        query.put("_id", key);
-        return collection.findOneAndDelete(query) != null;
-    }
+   @Override
+   public boolean remove(byte[] key) {
+      BasicDBObject query = new BasicDBObject();
+      query.put("_id", key);
+      return collection.findOneAndDelete(query) != null;
+   }
 
-    @Override
-    public MongoDBEntry<K, V> get(byte[] key) {
-        BasicDBObject query = new BasicDBObject();
-        query.put("_id", key);
+   @Override
+   public MongoDBEntry<K, V> get(byte[] key) {
+      BasicDBObject query = new BasicDBObject();
+      query.put("_id", key);
 
-        MongoCursor<Document> iterator = collection.find(query).iterator();
-        if (!iterator.hasNext()) {
-            return null;
-        }
-        return createEntry(iterator.next());
+      MongoCursor<Document> iterator = collection.find(query).iterator();
+      if (!iterator.hasNext()) {
+         return null;
+      }
+      return createEntry(iterator.next());
 
-    }
+   }
 
-    private MongoDBEntry<K, V> createEntry(Document document) {
-        byte[] k = ((Binary) document.get("_id")).getData();
-        byte[] v = ((Binary) document.get("value")).getData();
-        byte[] m = ((Binary) document.get("metadata")).getData();
+   private MongoDBEntry<K, V> createEntry(Document document) {
+      byte[] k = ((Binary) document.get("_id")).getData();
+      byte[] v = ((Binary) document.get("value")).getData();
+      byte[] m = ((Binary) document.get("metadata")).getData();
 
-        MongoDBEntry.Builder<K,V> mongoDBEntryBuilder = MongoDBEntry.builder();
+      MongoDBEntry.Builder<K, V> mongoDBEntryBuilder = MongoDBEntry.builder();
 
-        mongoDBEntryBuilder
-                .keyBytes(k)
-                .valueBytes(v)
-                .metadataBytes(m);
+      mongoDBEntryBuilder
+              .keyBytes(k)
+              .valueBytes(v)
+              .metadataBytes(m);
 
-        return mongoDBEntryBuilder.create();
-    }
+      return mongoDBEntryBuilder.create();
+   }
 
-    public boolean containsKey(byte[] key) {
-        return get(key) != null;
-    }
+   public boolean containsKey(byte[] key) {
+      return get(key) != null;
+   }
 
-    @Override
-    public List<MongoDBEntry<K, V>> getPagedEntries(byte[] lastKey) {
-        FindIterable<Document> iterable = lastKey != null ? collection.find(lt("_id", lastKey)) : collection.find();
-        iterable.sort(descending("_id")).limit(pagingSize);
+   @Override
+   public List<MongoDBEntry<K, V>> getPagedEntries(byte[] lastKey) {
+      FindIterable<Document> iterable = lastKey != null ? collection.find(lt("_id", lastKey)) : collection.find();
+      iterable.sort(descending("_id")).limit(pagingSize);
 
-        List<MongoDBEntry<K, V>> entries = new ArrayList<>();
-        iterable.map(this::createEntry).into(entries);
+      List<MongoDBEntry<K, V>> entries = new ArrayList<>();
+      iterable.map(this::createEntry).into(entries);
 
-        return entries;
-    }
+      return entries;
+   }
 
 
-    @Override
-    public List<MongoDBEntry<K, V>> removeExpiredData(byte[] lastKey) {
-        long time = timeService.wallClockTime();
+   @Override
+   public List<MongoDBEntry<K, V>> removeExpiredData(byte[] lastKey) {
+      long time = timeService.wallClockTime();
 
-        Bson filter = and(lte("expiryTime", new Date(time)), gt("expiryTime", new Date(-1)));
+      Bson filter = and(lte("expiryTime", new Date(time)), gt("expiryTime", new Date(-1)));
 
-        if (lastKey != null) {
-            filter = and(filter, lt("_id", lastKey));
-        }
+      if (lastKey != null) {
+         filter = and(filter, lt("_id", lastKey));
+      }
 
-        FindIterable<Document> iterable = collection.find(filter).sort(descending("_id")).limit(pagingSize);
+      FindIterable<Document> iterable = collection.find(filter).sort(descending("_id")).limit(pagingSize);
 
-        List<MongoDBEntry<K, V>> listOfExpiredEntries = new ArrayList<>();
-        iterable.map(this::createEntry).into(listOfExpiredEntries);
+      List<MongoDBEntry<K, V>> listOfExpiredEntries = new ArrayList<>();
+      iterable.map(this::createEntry).into(listOfExpiredEntries);
 
-        collection.deleteMany(filter);
-        return listOfExpiredEntries;
-    }
+      collection.deleteMany(filter);
+      return listOfExpiredEntries;
+   }
 
-    @Override
-    public void put(MongoDBEntry<K, V> entry) {
-        Document document = new Document("_id", entry.getKeyBytes())
-                .append("value", entry.getValueBytes())
-                .append("metadata", entry.getMetadataBytes())
-                .append("expiryTime", entry.getExpiryTime());
+   @Override
+   public void put(MongoDBEntry<K, V> entry) {
+      Document document = new Document("_id", entry.getKeyBytes())
+              .append("value", entry.getValueBytes())
+              .append("metadata", entry.getMetadataBytes())
+              .append("expiryTime", entry.getExpiryTime());
 
-        if (containsKey(entry.getKeyBytes())) {
-            collection.replaceOne(eq("_id", entry.getKeyBytes()), document);
+      if (containsKey(entry.getKeyBytes())) {
+         collection.replaceOne(eq("_id", entry.getKeyBytes()), document);
 
-        } else {
-            collection.insertOne(document);
-        }
-    }
+      } else {
+         collection.insertOne(document);
+      }
+   }
 
-    @Override
-    public void stop() {
-        mongoClient.close();
-    }
+   @Override
+   public void stop() {
+      mongoClient.close();
+   }
 }

@@ -22,46 +22,46 @@ import static org.infinispan.test.TestingUtil.INFINISPAN_START_TAG_NO_SCHEMA;
  */
 @Test(groups = "unit", testName = "persistence.mongodb.configuration.parser.MongoDBCacheStoreConfigurationParser80Test")
 public class MongoDBCacheStoreConfigurationParser80Test extends AbstractInfinispanTest {
-    private EmbeddedCacheManager cacheManager;
+   private EmbeddedCacheManager cacheManager;
 
-    @AfterMethod(alwaysRun = true)
-    public void cleanup() {
-        TestingUtil.killCacheManagers(cacheManager);
-    }
+   @AfterMethod(alwaysRun = true)
+   public void cleanup() {
+      TestingUtil.killCacheManagers(cacheManager);
+   }
 
-    public void testMongoDBCacheStore() throws Exception {
-        String config = INFINISPAN_START_TAG_NO_SCHEMA + "\n" +
-                "   <cache-container default-cache=\"defaultCache\">\n" +
-                "     <local-cache name=\"defaultCache\">\n" +
-                "       <persistence>\n" +
-                "         <mongodbStore xmlns=\"urn:infinispan:config:mongodb:8.1\" >\n" +
-                "           <connection hostname=\"localhost\" port=\"27017\" timeout=\"2000\" acknowledgment=\"0\"/>\n" +
-                "		    <authentication username=\"mongoUser\" password=\"mongoPass\" />\n" +
-                "		    <storage database=\"infinispan_test_database\" collection=\"infispan_cachestore\" />\n" +
-                "         </mongodbStore>\n" +
-                "       </persistence>\n" +
-                "     </local-cache>\n" +
-                "   </cache-container>\n" +
-                TestingUtil.INFINISPAN_END_TAG;
+   public void testMongoDBCacheStore() throws Exception {
+      String config = INFINISPAN_START_TAG_NO_SCHEMA + "\n" +
+              "   <cache-container default-cache=\"defaultCache\">\n" +
+              "     <local-cache name=\"defaultCache\">\n" +
+              "       <persistence>\n" +
+              "         <mongodbStore xmlns=\"urn:infinispan:config:mongodb:8.1\" >\n" +
+              "           <connection hostname=\"localhost\" port=\"27017\" timeout=\"2000\" acknowledgment=\"0\"/>\n" +
+              "		    <authentication username=\"mongoUser\" password=\"mongoPass\" />\n" +
+              "		    <storage database=\"infinispan_test_database\" collection=\"infispan_cachestore\" />\n" +
+              "         </mongodbStore>\n" +
+              "       </persistence>\n" +
+              "     </local-cache>\n" +
+              "   </cache-container>\n" +
+              TestingUtil.INFINISPAN_END_TAG;
 
-        MongoDBStoreConfiguration store = (MongoDBStoreConfiguration) buildCacheManagerWithCacheStore(config);
-        assert store.hostname().equals("localhost");
-        assert store.port() == 27017;
-        assert store.username().equals("mongoUser");
-        assert store.password().equals("mongoPass");
-        assert store.database().equals("infinispan_test_database");
-        assert store.collection().equals("infispan_cachestore");
-        assert store.acknowledgment() == 0;
-        assert !store.fetchPersistentState();
-        assert !store.purgeOnStartup();
-        assert !store.ignoreModifications();
-        assert !store.async().enabled();
-    }
+      MongoDBStoreConfiguration store = (MongoDBStoreConfiguration) buildCacheManagerWithCacheStore(config);
+      assert store.hostname().equals("localhost");
+      assert store.port() == 27017;
+      assert store.username().equals("mongoUser");
+      assert store.password().equals("mongoPass");
+      assert store.database().equals("infinispan_test_database");
+      assert store.collection().equals("infispan_cachestore");
+      assert store.acknowledgment() == 0;
+      assert !store.fetchPersistentState();
+      assert !store.purgeOnStartup();
+      assert !store.ignoreModifications();
+      assert !store.async().enabled();
+   }
 
-    private StoreConfiguration buildCacheManagerWithCacheStore(final String config) throws IOException {
-        InputStream is = new ByteArrayInputStream(config.getBytes());
-        cacheManager = TestCacheManagerFactory.fromStream(is);
-        assert cacheManager.getDefaultCacheConfiguration().persistence().stores().size() == 1;
-        return cacheManager.getDefaultCacheConfiguration().persistence().stores().get(0);
-    }
+   private StoreConfiguration buildCacheManagerWithCacheStore(final String config) throws IOException {
+      InputStream is = new ByteArrayInputStream(config.getBytes());
+      cacheManager = TestCacheManagerFactory.fromStream(is);
+      assert cacheManager.getDefaultCacheConfiguration().persistence().stores().size() == 1;
+      return cacheManager.getDefaultCacheConfiguration().persistence().stores().get(0);
+   }
 }
