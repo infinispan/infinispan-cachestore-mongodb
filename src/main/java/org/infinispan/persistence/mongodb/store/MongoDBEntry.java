@@ -27,8 +27,8 @@ public class MongoDBEntry<K, V> {
         this.expiryTime = expiryTime;
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public static <K,V> Builder<K,V> builder() {
+        return new Builder<>();
     }
 
     public byte[] getKeyBytes() {
@@ -112,7 +112,7 @@ public class MongoDBEntry<K, V> {
         }
 
         public MongoDBEntry<K, V> create() {
-            return new MongoDBEntry<K, V>(keyBytes, valueBytes, metadataBytes, expiryTime);
+            return new MongoDBEntry<>(keyBytes, valueBytes, metadataBytes, expiryTime);
         }
     }
 }

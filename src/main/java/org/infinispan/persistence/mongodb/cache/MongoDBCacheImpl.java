@@ -1,12 +1,24 @@
 package org.infinispan.persistence.mongodb.cache;
 
 import com.mongodb.*;
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
+import com.mongodb.client.MongoDatabase;
+import org.bson.Document;
+import org.bson.conversions.Bson;
+import org.bson.types.Binary;
 import org.infinispan.persistence.mongodb.configuration.MongoDBStoreConfiguration;
 import org.infinispan.persistence.mongodb.store.MongoDBEntry;
 import org.infinispan.util.TimeService;
 
-import java.net.UnknownHostException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+
+import static com.mongodb.client.model.Filters.*;
+import static com.mongodb.client.model.Sorts.descending;
 
 /**
  * An implementation of the MongoDBCache interface.
@@ -15,11 +27,11 @@ import java.util.*;
  * @param <V> - value
  *
  * @author Gabriel Francisco <gabfssilva@gmail.com>
+ * @author gustavonalle
  */
 public class MongoDBCacheImpl<K, V> implements MongoDBCache<K, V> {
     private MongoClient mongoClient;
-    private DB database;
-    private DBCollection collection;
+    private MongoCollection<Document> collection;
     private final TimeService timeService;
 
     private MongoDBStoreConfiguration mongoCacheConfiguration;
@@ -45,13 +57,17 @@ public class MongoDBCacheImpl<K, V> implements MongoDBCache<K, V> {
 
         ServerAddress serverAddress = new ServerAddress(mongoCacheConfiguration.hostname(), mongoCacheConfiguration.port());
 
-        mongoClient = new MongoClient(serverAddress, mongoClientOptionsBuilder.build());
+        String databaseName = mongoCacheConfiguration.database();
 
-        database = mongoClient.getDB(mongoCacheConfiguration.database());
-
-        if (!"".equals(mongoCacheConfiguration.username()) && mongoCacheConfiguration.username() != null) {
-            database.authenticate(mongoCacheConfiguration.username(), mongoCacheConfiguration.password().toCharArray());
+        String username = mongoCacheConfiguration.username();
+        String password = mongoCacheConfiguration.password();
+        if (!"".equals(username) && password != null) {
+            MongoCredential credential = MongoCredential.createCredential(username, databaseName, password.toCharArray());
+            this.mongoClient = new MongoClient(serverAddress, Collections.singletonList(credential), mongoClientOptionsBuilder.build());
+        } else {
+            this.mongoClient = new MongoClient(serverAddress, mongoClientOptionsBuilder.build());
         }
+        MongoDatabase database = mongoClient.getDatabase(databaseName);
 
         collection = database.getCollection(mongoCacheConfiguration.collection());
     }
@@ -71,7 +87,7 @@ public class MongoDBCacheImpl<K, V> implements MongoDBCache<K, V> {
     public boolean remove(byte[] key) {
         BasicDBObject query = new BasicDBObject();
         query.put("_id", key);
-        return collection.findAndRemove(query) != null;
+        return collection.findOneAndDelete(query) != null;
     }
 
     @Override
@@ -79,22 +95,20 @@ public class MongoDBCacheImpl<K, V> implements MongoDBCache<K, V> {
         BasicDBObject query = new BasicDBObject();
         query.put("_id", key);
 
-        try (DBCursor cursor = collection.find(query)){
-            if(!cursor.hasNext()){
-                return null;
-            }
-            return createEntry(cursor);
+        MongoCursor<Document> iterator = collection.find(query).iterator();
+        if (!iterator.hasNext()) {
+            return null;
         }
+        return createEntry(iterator.next());
+
     }
 
-    private MongoDBEntry<K,V> createEntry(DBCursor cursor) {
-        BasicDBObject result = (BasicDBObject) cursor.next();
+    private MongoDBEntry<K, V> createEntry(Document document) {
+        byte[] k = ((Binary) document.get("_id")).getData();
+        byte[] v = ((Binary) document.get("value")).getData();
+        byte[] m = ((Binary) document.get("metadata")).getData();
 
-        byte[] k = (byte[]) result.get("_id");
-        byte[] v = (byte[]) result.get("value");
-        byte[] m = (byte[]) result.get("metadata");
-
-        MongoDBEntry.Builder mongoDBEntryBuilder = MongoDBEntry.builder();
+        MongoDBEntry.Builder<K,V> mongoDBEntryBuilder = MongoDBEntry.builder();
 
         mongoDBEntryBuilder
                 .keyBytes(k)
@@ -110,73 +124,48 @@ public class MongoDBCacheImpl<K, V> implements MongoDBCache<K, V> {
 
     @Override
     public List<MongoDBEntry<K, V>> getPagedEntries(byte[] lastKey) {
-        QueryBuilder queryBuilder = QueryBuilder.start();
+        FindIterable<Document> iterable = lastKey != null ? collection.find(lt("_id", lastKey)) : collection.find();
+        iterable.sort(descending("_id")).limit(pagingSize);
 
-        if(lastKey != null) {
-            queryBuilder.put("_id").lessThan(lastKey);
-        }
-        DBObject query = queryBuilder.get();
-        DBCursor cursor = collection.find(query).sort(new BasicDBObject("_id", -1)).limit(pagingSize);
+        List<MongoDBEntry<K, V>> entries = new ArrayList<>();
+        iterable.map(this::createEntry).into(entries);
 
-        List<MongoDBEntry<K,V>> entries = getListFromCursor(cursor);
         return entries;
     }
 
 
-    private List<MongoDBEntry<K,V>> getListFromCursor(DBCursor cursor) {
-        List<MongoDBEntry<K,V>> entries = new ArrayList<>(cursor.size());
-        try {
-            while (cursor.hasNext()) {
-                entries.add(createEntry(cursor));
-            }
-            return entries;
-        } finally {
-            cursor.close();
-        }
-    }
-
     @Override
     public List<MongoDBEntry<K, V>> removeExpiredData(byte[] lastKey) {
-        QueryBuilder queryBuilder = QueryBuilder.start();
-
         long time = timeService.wallClockTime();
 
-        queryBuilder
-                .put("expiryTime")
-                .lessThanEquals(new Date(time))
-                .greaterThan(new Date(-1));
+        Bson filter = and(lte("expiryTime", new Date(time)), gt("expiryTime", new Date(-1)));
 
-        if(lastKey != null) {
-            queryBuilder.put("_id").lessThan(lastKey);
+        if (lastKey != null) {
+            filter = and(filter, lt("_id", lastKey));
         }
 
-        DBObject query = queryBuilder.get();
-        List<MongoDBEntry<K, V>> listOfExpiredEntries;
-        try(DBCursor cursor = collection.find(query).sort(new BasicDBObject("_id", -1)).limit(pagingSize)) {
-            listOfExpiredEntries = getListFromCursor(cursor);
-        }
-        collection.remove(query);
+        FindIterable<Document> iterable = collection.find(filter).sort(descending("_id")).limit(pagingSize);
+
+        List<MongoDBEntry<K, V>> listOfExpiredEntries = new ArrayList<>();
+        iterable.map(this::createEntry).into(listOfExpiredEntries);
+
+        collection.deleteMany(filter);
         return listOfExpiredEntries;
     }
 
     @Override
     public void put(MongoDBEntry<K, V> entry) {
-        BasicDBObject object = new BasicDBObject();
-
-        object.put("_id", entry.getKeyBytes());
-        object.put("value", entry.getValueBytes());
-        object.put("metadata", entry.getMetadataBytes());
-        object.put("expiryTime", entry.getExpiryTime());
+        Document document = new Document("_id", entry.getKeyBytes())
+                .append("value", entry.getValueBytes())
+                .append("metadata", entry.getMetadataBytes())
+                .append("expiryTime", entry.getExpiryTime());
 
         if (containsKey(entry.getKeyBytes())) {
-            BasicDBObject query = new BasicDBObject();
-            query.put("_id", entry.getKeyBytes());
-            BasicDBObject target = (BasicDBObject) collection.findOne(query);
-            collection.update(target, object);
-            return;
-        }
+            collection.replaceOne(eq("_id", entry.getKeyBytes()), document);
 
-        collection.insert(object);
+        } else {
+            collection.insertOne(document);
+        }
     }
 
     @Override
