@@ -10,7 +10,6 @@ import org.infinispan.persistence.mongodb.configuration.MongoDBStoreConfiguratio
 import org.infinispan.persistence.mongodb.configuration.MongoDBStoreConfigurationBuilder;
 import org.infinispan.persistence.spi.AdvancedLoadWriteStore;
 import org.infinispan.test.fwk.TestCacheManagerFactory;
-import org.junit.After;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.Test;
 
@@ -65,7 +64,6 @@ public class MongoDBStoreTest extends BaseStoreTest {
         return mongoDBStore;
     }
 
-    @After
     @AfterMethod
     public void tearDown()  {
         mongoDBStore.clear();
