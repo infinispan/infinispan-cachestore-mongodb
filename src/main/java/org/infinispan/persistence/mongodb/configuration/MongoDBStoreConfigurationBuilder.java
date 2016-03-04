@@ -10,14 +10,8 @@ import org.infinispan.configuration.cache.PersistenceConfigurationBuilder;
  * @author Gabriel Francisco <gabfssilva@gmail.com>
  */
 public class MongoDBStoreConfigurationBuilder extends AbstractStoreConfigurationBuilder<MongoDBStoreConfiguration, MongoDBStoreConfigurationBuilder> {
-   private String hostname;
-   private int port;
-   private String database;
+   private String connectionURI;
    private String collection;
-   private String username;
-   private String password;
-   private int timeout;
-   private int acknowledgment;
 
    public MongoDBStoreConfigurationBuilder(PersistenceConfigurationBuilder builder) {
       super(builder, MongoDBStoreConfiguration.attributeDefinitionSet());
@@ -25,8 +19,8 @@ public class MongoDBStoreConfigurationBuilder extends AbstractStoreConfiguration
 
    @Override
    public MongoDBStoreConfiguration create() {
-      return new MongoDBStoreConfiguration(attributes.protect(), async.create(), singletonStore.create(), hostname, port, timeout,
-              acknowledgment, database, collection, username, password);
+      return new MongoDBStoreConfiguration(attributes.protect(), async.create(), singletonStore.create(), connectionURI,
+              collection);
    }
 
    @Override
@@ -34,56 +28,19 @@ public class MongoDBStoreConfigurationBuilder extends AbstractStoreConfiguration
       this.async.read(template.async());
       this.singletonStore.read(template.singletonStore());
 
-      this.hostname = template.hostname();
-      this.port = template.port();
-      this.database = template.database();
+      this.connectionURI = template.getConnectionURI();
       this.collection = template.collection();
-      this.username = template.username();
-      this.password = template.password();
-      this.acknowledgment = template.acknowledgment();
-      this.timeout = template.timeout();
 
       return self();
    }
 
-
-   public MongoDBStoreConfigurationBuilder hostname(String hostname) {
-      this.hostname = hostname;
-      return self();
-   }
-
-   public MongoDBStoreConfigurationBuilder port(int port) {
-      this.port = port;
+   public MongoDBStoreConfigurationBuilder connectionURI(String hostname) {
+      this.connectionURI = hostname;
       return self();
    }
 
    public MongoDBStoreConfigurationBuilder collection(String collection) {
       this.collection = collection;
-      return self();
-   }
-
-   public MongoDBStoreConfigurationBuilder database(String database) {
-      this.database = database;
-      return self();
-   }
-
-   public MongoDBStoreConfigurationBuilder username(String username) {
-      this.username = username;
-      return self();
-   }
-
-   public MongoDBStoreConfigurationBuilder password(String password) {
-      this.password = password;
-      return self();
-   }
-
-   public MongoDBStoreConfigurationBuilder timeout(int timeout) {
-      this.timeout = timeout;
-      return self();
-   }
-
-   public MongoDBStoreConfigurationBuilder acknowledgment(int acknowledgment) {
-      this.acknowledgment = acknowledgment;
       return self();
    }
 

@@ -4,7 +4,7 @@ The Infinispan Community
 
 == Introduction
 The MongoDB cache store persists data in link:http://www.mongodb.org[MongoDB].
-To communicate with the MongoDB server instance, we are using the official java driver version 2.11.4
+To communicate with the MongoDB server instance, we are using the official java driver version 3.0.4
 To configure the cache store, you just need to add a new entry into the persistence section.
 
 === Sample usage
@@ -15,10 +15,8 @@ Here is an example for your xml configuration file:
 ----
 
 <persistence>
-   <mongodbStore xmlns="urn:infinispan:config:mongodb:8.1" >
-        <connection hostname="localhost" port="27017" timeout="2000" acknowledgment="0"/>
-        <authentication username="mongoUser" password="mongoPass" />
-        <storage database="infinispan_test_database" collection="infispan_cachestore" />
+   <mongodbStore xmlns="urn:infinispan:config:mongodb:8.2" >
+        <connection uri="mongodb://mongoUser:mongoPass@server1:27017,server2:27017/database?w=0&amp;connectTimeoutMS=2000" collection="infispan_cachestore"/>
    </mongodbStore>
 </persistence>
 
@@ -31,13 +29,7 @@ If you prefer the programmatic API here is a snippet:
 
 ConfigurationBuilder b = new ConfigurationBuilder();
 b.persistence().addStore(MongoDBStoreConfigurationBuilder.class)
-   .hostname( "localhost" )
-   .port( 27017 )
-   .timeout( 1500 )
-   .acknowledgment( 0 )
-   .username( "mongoDBUSer" )
-   .password( "mongoBDPassword" )
-   .database( "infinispan_cachestore" )
+   .connectionURI( "mongodb://localhost" )
    .collection( "indexes" );
 
 final Configuration config = b.build();
@@ -49,20 +41,8 @@ The storage section explicits where you will store the data.
 
 [options="header"]
 |===============
-|Section|property|usage|default value
-| _connection_ | | | 
-| |hostname| The hostname of the server on which the MongoDB is running |localhost
-| |port| The port used by the MongoDB server instance. |27017
-| |timeout| The timeout used by the MongoDB driver at the connection. (in ms) |2000
-| |acknoledgement| The value used to configure the acknowledgment for write operation (-1 / 0 / 1 / 2+) |1
-| _authentication_ | | | 
-| |username| The username used for the authentication with the MongoDB server. | 
-| |password| The password used for the authentication with the MongoDB server. | 
-| _storage_ | | | 
-| |database| The database used to store elements. | 
-| |collection| The collection which will contain the elements. | 
+|property|usage|default value
+|connectionURI| The MongoDB link:$$https://docs.mongodb.org/manual/reference/connection-string/$$[connection string]. | mongodb://localhost
+|collection| The collection which will contain the elements. | 
 
 |===============
-
-
-For more information about the configuration property usage, you can refer to the official link:$$http://api.mongodb.org/java/2.11.4/com/mongodb/WriteConcern.html$$[MongoDB java driver documentation]

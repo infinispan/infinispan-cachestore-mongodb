@@ -12,14 +12,12 @@ import java.util.Map;
 public enum Element {
    UNKNOWN(null),
    MONGODB_STORE("mongodbStore"),
-   CONNECTION("connection"),
-   AUTHENTICATION("authentication"),
-   STORAGE("storage");
+   CONNECTION("connection");
 
    private static final Map<String, Element> elements;
 
    static {
-      final Map<String, Element> map = new HashMap<String, Element>(8);
+      final Map<String, Element> map = new HashMap<>(3);
       for (Element element : values()) {
          final String name = element.getName();
          if (name != null) {

@@ -15,21 +15,7 @@ public enum Attribute {
    /**
     * Attributes of Element.CONNECTION
     */
-   HOSTNAME("hostname"),
-   PORT("port"),
-   TIMEOUT("timeout"),
-   ACKNOWLEDGMENT("acknowledgment"),
-
-   /**
-    * Attributes of Element.AUTHENTICATION
-    */
-   USERNAME("username"),
-   PASSWORD("password"),
-
-   /**
-    * Attributes of Element.STORAGE
-    */
-   DATABASE("database"),
+   CONNECTION_URI("uri"),
    COLLECTION("collection");
 
    private static final Map<String, Attribute> attributes;

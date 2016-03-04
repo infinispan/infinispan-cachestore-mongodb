@@ -17,26 +17,14 @@ import org.infinispan.persistence.mongodb.store.MongoDBStore;
 @ConfigurationFor(MongoDBStore.class)
 @BuiltBy(MongoDBStoreConfigurationBuilder.class)
 public class MongoDBStoreConfiguration extends AbstractStoreConfiguration {
-   private String hostname;
-   private int port;
-   private int timeout;
-   private int acknowledgment;
-   private String database;
-   private String collection;
-   private String username;
-   private String password;
+   private final String connectionURI;
+   private final String collection;
 
    public MongoDBStoreConfiguration(AttributeSet attributes, AsyncStoreConfiguration async,
-                                    SingletonStoreConfiguration singletonStore, String hostname, int port, int timeout, int acknowledgment, String database, String collection, String username, String password) {
+                                    SingletonStoreConfiguration singletonStore, String connectionURI, String collection) {
       super(attributes, async, singletonStore);
-      this.hostname = hostname;
-      this.port = port;
-      this.timeout = timeout;
-      this.acknowledgment = acknowledgment;
-      this.database = database;
+      this.connectionURI = connectionURI;
       this.collection = collection;
-      this.username = username;
-      this.password = password;
    }
 
    public static AttributeSet attributeDefinitionSet() {
@@ -44,40 +32,16 @@ public class MongoDBStoreConfiguration extends AbstractStoreConfiguration {
               MongoDBStoreConfiguration.class, AbstractStoreConfiguration.attributeDefinitionSet());
    }
 
-   public String hostname() {
-      return hostname;
-   }
-
-   public int port() {
-      return port;
-   }
-
-   public String database() {
-      return database;
-   }
-
    public String collection() {
       return collection;
-   }
-
-   public String username() {
-      return username;
-   }
-
-   public String password() {
-      return password;
-   }
-
-   public int acknowledgment() {
-      return acknowledgment;
-   }
-
-   public int timeout() {
-      return timeout;
    }
 
    @Override
    public AttributeSet attributes() {
       return attributes;
+   }
+
+   public String getConnectionURI() {
+      return connectionURI;
    }
 }

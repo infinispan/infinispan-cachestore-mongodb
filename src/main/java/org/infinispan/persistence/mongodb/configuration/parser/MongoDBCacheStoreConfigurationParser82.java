@@ -21,12 +21,13 @@ import static org.infinispan.commons.util.StringPropertyReplacer.replaceProperti
  *
  * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
  * @author Gabriel Francisco <gabfssilva@gmail.com>
+ * @author gustavonalle
  */
 @Namespaces({
-        @Namespace(uri = "urn:infinispan:config:mongodb:8.1", root = "mongodbStore"),
+        @Namespace(uri = "urn:infinispan:config:mongodb:8.2", root = "mongodbStore"),
         @Namespace(root = "mongodbStore")
 })
-public class MongoDBCacheStoreConfigurationParser81 implements ConfigurationParser {
+public class MongoDBCacheStoreConfigurationParser82 implements ConfigurationParser {
 
    @Override
    public void readElement(XMLExtendedStreamReader xmlExtendedStreamReader, ConfigurationBuilderHolder configurationBuilderHolder)
@@ -65,14 +66,6 @@ public class MongoDBCacheStoreConfigurationParser81 implements ConfigurationPars
                this.parseConnection(reader, builder);
                break;
             }
-            case AUTHENTICATION: {
-               this.parseAuthentication(reader, builder);
-               break;
-            }
-            case STORAGE: {
-               this.parseStorage(reader, builder);
-               break;
-            }
             default: {
                throw ParseUtils.unexpectedElement(reader);
             }
@@ -88,8 +81,8 @@ public class MongoDBCacheStoreConfigurationParser81 implements ConfigurationPars
          String value = replaceProperties(reader.getAttributeValue(i));
          Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
          switch (attribute) {
-            case DATABASE: {
-               builder.database(value);
+            case CONNECTION_URI: {
+               builder.connectionURI(value);
                break;
             }
             case COLLECTION: {
@@ -111,43 +104,12 @@ public class MongoDBCacheStoreConfigurationParser81 implements ConfigurationPars
          String value = replaceProperties(reader.getAttributeValue(i));
          Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
          switch (attribute) {
-            case HOSTNAME: {
-               builder.hostname(value);
+            case CONNECTION_URI: {
+               builder.connectionURI(value);
                break;
             }
-            case PORT: {
-               builder.port(Integer.valueOf(value));
-               break;
-            }
-            case TIMEOUT: {
-               builder.timeout(Integer.valueOf(value));
-               break;
-            }
-            case ACKNOWLEDGMENT: {
-               builder.acknowledgment(Integer.valueOf(value));
-               break;
-            }
-            default: {
-               throw ParseUtils.unexpectedAttribute(reader, i);
-            }
-         }
-      }
-      ParseUtils.requireNoContent(reader);
-   }
-
-   private void parseAuthentication(XMLExtendedStreamReader reader, MongoDBStoreConfigurationBuilder builder)
-           throws XMLStreamException {
-      for (int i = 0; i < reader.getAttributeCount(); i++) {
-         ParseUtils.requireNoNamespaceAttribute(reader, i);
-         String value = replaceProperties(reader.getAttributeValue(i));
-         Attribute attribute = Attribute.forName(reader.getAttributeLocalName(i));
-         switch (attribute) {
-            case USERNAME: {
-               builder.username(value);
-               break;
-            }
-            case PASSWORD: {
-               builder.password(value);
+            case COLLECTION: {
+               builder.collection(value);
                break;
             }
             default: {

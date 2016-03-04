@@ -46,12 +46,9 @@ public class MongoDBStoreTest extends BaseStoreTest {
       builder
               .persistence()
               .addStore(MongoDBStoreConfigurationBuilder.class)
-              .hostname(hostname)
-              .port(port)
-              .database(DATABASE)
+              .connectionURI("mongodb://" + hostname + ":" + port + "/" + DATABASE + "?connectTimeoutMS=1000&w=1")
               .collection(COLLECTION)
-              .timeout(1000)
-              .acknowledgment(1).create();
+              .create();
 
       mongoDBStore = new MongoDBStore();
       mongoDBStore.init(createContext(builder.build()));
@@ -59,8 +56,8 @@ public class MongoDBStoreTest extends BaseStoreTest {
       return mongoDBStore;
    }
 
-    @AfterMethod
-    public void tearDown()  {
-        mongoDBStore.clear();
-    }
+   @AfterMethod
+   public void tearDown() {
+      mongoDBStore.clear();
+   }
 }

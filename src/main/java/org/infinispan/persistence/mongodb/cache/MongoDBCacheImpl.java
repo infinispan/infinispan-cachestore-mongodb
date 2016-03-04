@@ -2,10 +2,7 @@ package org.infinispan.persistence.mongodb.cache;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.MongoClient;
-import com.mongodb.MongoClientOptions;
-import com.mongodb.MongoCredential;
-import com.mongodb.ServerAddress;
-import com.mongodb.WriteConcern;
+import com.mongodb.MongoClientURI;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
@@ -18,7 +15,6 @@ import org.infinispan.persistence.mongodb.store.MongoDBEntry;
 import org.infinispan.util.TimeService;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -51,27 +47,10 @@ public class MongoDBCacheImpl<K, V> implements MongoDBCache<K, V> {
    }
 
    public void start() throws Exception {
-      MongoClientOptions.Builder mongoClientOptionsBuilder = MongoClientOptions.builder();
-
-      mongoClientOptionsBuilder
-              .connectTimeout(mongoCacheConfiguration.timeout())
-              .writeConcern(new WriteConcern(mongoCacheConfiguration.acknowledgment()));
-
-      ServerAddress serverAddress = new ServerAddress(mongoCacheConfiguration.hostname(), mongoCacheConfiguration.port());
-
-      String databaseName = mongoCacheConfiguration.database();
-
-      String username = mongoCacheConfiguration.username();
-      String password = mongoCacheConfiguration.password();
-      if (!"".equals(username) && password != null) {
-         MongoCredential credential = MongoCredential.createCredential(username, databaseName, password.toCharArray());
-         this.mongoClient = new MongoClient(serverAddress, Collections.singletonList(credential), mongoClientOptionsBuilder.build());
-      } else {
-         this.mongoClient = new MongoClient(serverAddress, mongoClientOptionsBuilder.build());
-      }
-      MongoDatabase database = mongoClient.getDatabase(databaseName);
-
-      collection = database.getCollection(mongoCacheConfiguration.collection());
+      MongoClientURI mongoClientURI = new MongoClientURI(mongoCacheConfiguration.getConnectionURI());
+      this.mongoClient = new MongoClient(mongoClientURI);
+      MongoDatabase database = mongoClient.getDatabase(mongoClientURI.getDatabase());
+      this.collection = database.getCollection(mongoCacheConfiguration.collection());
    }
 
    @Override
