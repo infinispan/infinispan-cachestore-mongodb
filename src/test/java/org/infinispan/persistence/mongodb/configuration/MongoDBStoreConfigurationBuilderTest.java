@@ -25,6 +25,7 @@ public class MongoDBStoreConfigurationBuilderTest {
               .addStore(MongoDBStoreConfigurationBuilder.class)
               .connectionURI(CONNECTION_URI)
               .collection(COLLECTION)
+              .async().enable()
               .build();
 
       MongoDBStoreConfiguration configuration = (MongoDBStoreConfiguration) conf.persistence().stores().get(0);
