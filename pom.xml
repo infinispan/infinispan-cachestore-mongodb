@@ -81,11 +81,11 @@
         <jboss.releases.repo.url>https://repository.jboss.org/nexus/service/local/staging/deploy/maven2</jboss.releases.repo.url>
         <jboss.snapshots.repo.url>https://repository.jboss.org/nexus/content/repositories/snapshots</jboss.snapshots.repo.url>
 
-        <version.infinispan>8.2.2.Final</version.infinispan>
-        <version.mongo.driver>3.0.4</version.mongo.driver>
+        <version.infinispan>8.2.3.Final</version.infinispan>
+        <version.mongo.driver>3.3.0</version.mongo.driver>
         <version.jcipannotations>1.0</version.jcipannotations>
 
-        <version.testng>6.1.1</version.testng>
+        <version.testng>6.8.8</version.testng>
         <version.java>1.8</version.java>
     </properties>
 
