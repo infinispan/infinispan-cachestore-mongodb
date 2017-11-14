@@ -4,7 +4,7 @@
 
     <groupId>org.infinispan</groupId>
     <artifactId>infinispan-cachestore-mongodb</artifactId>
-    <version>8.2.2-SNAPSHOT</version>
+    <version>9.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Infinispan MongoDB CacheStore</name>
     <description>Infinispan MongoDB CacheStore module</description>
@@ -81,7 +81,7 @@
         <jboss.releases.repo.url>https://repository.jboss.org/nexus/service/local/staging/deploy/maven2</jboss.releases.repo.url>
         <jboss.snapshots.repo.url>https://repository.jboss.org/nexus/content/repositories/snapshots</jboss.snapshots.repo.url>
 
-        <version.infinispan>8.2.3.Final</version.infinispan>
+        <version.infinispan>9.0.0.Final</version.infinispan>
         <version.mongo.driver>3.3.0</version.mongo.driver>
         <version.jcipannotations>1.0</version.jcipannotations>
 

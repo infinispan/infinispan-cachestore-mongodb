@@ -2,13 +2,7 @@ package org.infinispan.persistence.mongodb.configuration.parser;
 
 import org.infinispan.configuration.cache.ConfigurationBuilder;
 import org.infinispan.configuration.cache.PersistenceConfigurationBuilder;
-import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
-import org.infinispan.configuration.parsing.ConfigurationParser;
-import org.infinispan.configuration.parsing.Namespace;
-import org.infinispan.configuration.parsing.Namespaces;
-import org.infinispan.configuration.parsing.ParseUtils;
-import org.infinispan.configuration.parsing.Parser80;
-import org.infinispan.configuration.parsing.XMLExtendedStreamReader;
+import org.infinispan.configuration.parsing.*;
 import org.infinispan.persistence.mongodb.configuration.MongoDBStoreConfigurationBuilder;
 
 import javax.xml.stream.XMLStreamConstants;
@@ -25,10 +19,9 @@ import static org.infinispan.commons.util.StringPropertyReplacer.replaceProperti
  * @author gustavonalle
  */
 @Namespaces({
-      @Namespace(uri = "urn:infinispan:config:store:mongodb:8.2", root = "mongodbStore"),
-      @Namespace(uri = "urn:infinispan:config:mongodb:8.2", root = "mongodbStore"), // Deprecated
-      @Namespace(root = "mongodbStore")
-})
+        @Namespace(uri = "urn:infinispan:config:store:mongodb:9.0", root = "mongodb-store"),
+        @Namespace(uri = "urn:infinispan:config:mongodb:9.0", root = "mongodb-store"),
+        @Namespace(root = "mongodb-store")})
 public class MongoDBCacheStoreConfigurationParser implements ConfigurationParser {
 
    @Override
@@ -66,7 +59,7 @@ public class MongoDBCacheStoreConfigurationParser implements ConfigurationParser
                break;
             }
             default: {
-               Parser80.parseStoreElement(reader, builder);
+                Parser.parseStoreElement(reader, builder);
             }
          }
       }

@@ -11,7 +11,7 @@ import java.util.Map;
  */
 public enum Element {
    UNKNOWN(null),
-   MONGODB_STORE("mongodbStore"),
+    MONGODB_STORE("mongodb-store"),
    CONNECTION("connection");
 
    private static final Map<String, Element> elements;
