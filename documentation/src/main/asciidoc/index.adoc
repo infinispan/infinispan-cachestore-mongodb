@@ -15,7 +15,7 @@ Here is an example for your xml configuration file:
 ----
 
 <persistence>
-   <mongodb-store xmlns="urn:infinispan:config:mongodb:9.0" >
+   <mongodb-store xmlns="urn:infinispan:config:mongodb:9.1" >
         <connection uri="mongodb://mongoUser:mongoPass@server1:27017,server2:27017/database?w=0&amp;connectTimeoutMS=2000" collection="infispan_cachestore"/>
    </mongodb-store>
 </persistence>

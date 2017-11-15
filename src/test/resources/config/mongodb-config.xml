@@ -4,7 +4,7 @@
     <cache-container>
         <local-cache name="cache">
             <persistence passivation="false">
-                <mongodb-store xmlns="urn:infinispan:config:store:mongodb:9.0">
+                <mongodb-store xmlns="urn:infinispan:config:store:mongodb:9.1">
                     <connection
                             uri="mongodb://mongoUser:mongoPass@localhost:27017/infinispan_test_database?w=0&amp;connectTimeoutMS=2000"
                             collection="infinispan_cachestore"/>

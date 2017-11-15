@@ -19,8 +19,8 @@ import static org.infinispan.commons.util.StringPropertyReplacer.replaceProperti
  * @author gustavonalle
  */
 @Namespaces({
-        @Namespace(uri = "urn:infinispan:config:store:mongodb:9.0", root = "mongodb-store"),
-        @Namespace(uri = "urn:infinispan:config:mongodb:9.0", root = "mongodb-store"),
+        @Namespace(uri = "urn:infinispan:config:store:mongodb:9.1", root = "mongodb-store"),
+        @Namespace(uri = "urn:infinispan:config:mongodb:9.1", root = "mongodb-store"),
         @Namespace(root = "mongodb-store")})
 public class MongoDBCacheStoreConfigurationParser implements ConfigurationParser {
 
