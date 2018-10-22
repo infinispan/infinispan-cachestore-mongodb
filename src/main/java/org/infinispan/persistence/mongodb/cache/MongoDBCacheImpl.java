@@ -10,9 +10,9 @@ import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.Binary;
+import org.infinispan.commons.time.TimeService;
 import org.infinispan.persistence.mongodb.configuration.MongoDBStoreConfiguration;
 import org.infinispan.persistence.mongodb.store.MongoDBEntry;
-import org.infinispan.util.TimeService;
 
 import java.util.ArrayList;
 import java.util.Date;

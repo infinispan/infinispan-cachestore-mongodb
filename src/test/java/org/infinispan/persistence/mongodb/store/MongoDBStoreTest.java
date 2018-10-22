@@ -17,7 +17,7 @@ import org.testng.annotations.Test;
  *
  * @author Gabriel Francisco <gabfssilva@gmail.com>
  */
-@Test(groups = "unit", testName = "persistence.mongodb.MongoDBStoreTest")
+@Test(groups = "unit", testName = "org.infinispan.persistence.mongodb.store.MongoDBStoreTest")
 public class MongoDBStoreTest extends BaseStoreTest {
 
    public static final String DATABASE = "mongostoretest";

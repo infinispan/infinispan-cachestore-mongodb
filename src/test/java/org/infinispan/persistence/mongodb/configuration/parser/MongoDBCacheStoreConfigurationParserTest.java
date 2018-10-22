@@ -10,7 +10,6 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.Test;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 import static org.testng.Assert.*;
@@ -20,7 +19,7 @@ import static org.testng.Assert.*;
  *
  * @author Gabriel Francisco <gabfssilva@gmail.com>
  */
-@Test(groups = "unit", testName = "persistence.mongodb.configuration.parser.MongoDBCacheStoreConfigurationParserTest")
+@Test(groups = "unit", testName = "org.infinispan.persistence.mongodb.configuration.parser.MongoDBCacheStoreConfigurationParserTest")
 public class MongoDBCacheStoreConfigurationParserTest extends AbstractInfinispanTest {
    private EmbeddedCacheManager cacheManager;
 

@@ -1,7 +1,9 @@
 package org.infinispan.persistence.mongodb.store;
 
 import net.jcip.annotations.ThreadSafe;
+import org.infinispan.commons.configuration.ConfiguredBy;
 import org.infinispan.commons.marshall.StreamingMarshaller;
+import org.infinispan.commons.persistence.Store;
 import org.infinispan.executors.ExecutorAllCompletionService;
 import org.infinispan.filter.KeyFilter;
 import org.infinispan.marshall.core.MarshalledEntry;
@@ -28,6 +30,8 @@ import java.util.concurrent.Executor;
  * @author Gabriel Francisco <gabfssilva@gmail.com>
  */
 @ThreadSafe
+@Store
+@ConfiguredBy(MongoDBStoreConfiguration.class)
 public class MongoDBStore<K, V> implements AdvancedLoadWriteStore<K, V> {
    private InitializationContext context;
 

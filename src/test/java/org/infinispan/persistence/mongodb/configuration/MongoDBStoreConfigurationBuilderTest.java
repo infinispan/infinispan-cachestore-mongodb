@@ -11,7 +11,7 @@ import static org.testng.Assert.assertTrue;
  *
  * @author Gabriel Francisco <gabfssilva@gmail.com>
  */
-@Test(groups = "unit", testName = "persistence.mongodb.configuration.MongoDBStoreConfigurationBuilderTest")
+@Test(groups = "unit", testName = "org.infinispan.persistence.mongodb.configuration.MongoDBStoreConfigurationBuilderTest")
 public class MongoDBStoreConfigurationBuilderTest {
    private static final String CONNECTION_URI = "mongodb://localhost";
    private static final String COLLECTION = "collection";
