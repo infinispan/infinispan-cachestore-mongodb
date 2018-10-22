@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <infinispan>
-
     <cache-container>
         <local-cache name="cache">
             <persistence passivation="false">
-                <mongodbStore xmlns="urn:infinispan:config:store:mongodb:8.2">
+                <mongodbStore xmlns="urn:infinispan:store:mongodb:9.4">
                     <connection
                             uri="mongodb://mongoUser:mongoPass@localhost:27017/infinispan_test_database?w=0&amp;connectTimeoutMS=2000"
                             collection="infinispan_cachestore"/>
