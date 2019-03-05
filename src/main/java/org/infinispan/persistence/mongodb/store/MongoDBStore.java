@@ -27,7 +27,7 @@ import java.util.concurrent.Executor;
  *
  * @param <K>
  * @param <V>
- * @author Gabriel Francisco <gabfssilva@gmail.com>
+ * @author Gabriel Francisco &lt;gabfssilva@gmail.com&gt;
  */
 @ThreadSafe
 @Store

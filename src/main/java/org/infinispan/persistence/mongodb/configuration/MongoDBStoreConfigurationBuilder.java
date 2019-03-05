@@ -7,7 +7,7 @@ import org.infinispan.configuration.cache.PersistenceConfigurationBuilder;
  * A MongoDBStoreConfiguration Builder. <br/>
  * This class creates a MongoDBStoreConfiguration.
  *
- * @author Gabriel Francisco <gabfssilva@gmail.com>
+ * @author Gabriel Francisco &lt;gabfssilva@gmail.com&gt;
  */
 public class MongoDBStoreConfigurationBuilder extends AbstractStoreConfigurationBuilder<MongoDBStoreConfiguration, MongoDBStoreConfigurationBuilder> {
    private String connectionURI;

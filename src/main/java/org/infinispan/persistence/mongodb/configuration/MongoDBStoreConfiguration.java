@@ -12,7 +12,7 @@ import org.infinispan.persistence.mongodb.store.MongoDBStore;
  * The configuration of MongoDBStore. <br/>
  * This class wraps all the MongoDB information for the connection.
  *
- * @author Gabriel Francisco <gabfssilva@gmail.com>
+ * @author Gabriel Francisco &lt;gabfssilva@gmail.com&gt;
  */
 @ConfigurationFor(MongoDBStore.class)
 @BuiltBy(MongoDBStoreConfigurationBuilder.class)

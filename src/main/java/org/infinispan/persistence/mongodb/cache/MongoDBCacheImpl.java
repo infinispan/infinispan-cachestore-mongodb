@@ -26,7 +26,7 @@ import static com.mongodb.client.model.Sorts.descending;
  *
  * @param <K> - key
  * @param <V> - value
- * @author Gabriel Francisco <gabfssilva@gmail.com>
+ * @author Gabriel Francisco &lt;gabfssilva@gmail.com&gt;
  * @author gustavonalle
  */
 public class MongoDBCacheImpl<K, V> implements MongoDBCache<K, V> {

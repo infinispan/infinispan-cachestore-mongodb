@@ -7,7 +7,7 @@ import java.util.Map;
  * All valid elements to configure a MongoDB cachestore
  * See also {@link Attribute} to have the complete list of attributes
  *
- * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
+ * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
  */
 public enum Element {
    UNKNOWN(null),

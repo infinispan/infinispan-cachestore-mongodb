@@ -9,7 +9,7 @@ import java.util.List;
  *
  * @param <K> - key
  * @param <V> - value
- * @author Gabriel Francisco <gabfssilva@gmail.com>
+ * @author Gabriel Francisco &lt;gabfssilva@gmail.com&gt;
  */
 public interface MongoDBCache<K, V> {
    /**
@@ -36,7 +36,7 @@ public interface MongoDBCache<K, V> {
     * Get a cache entry which has the same key of the parameter
     *
     * @param key
-    * @return
+    * @return the entry corresponding to the key
     */
    MongoDBEntry<K, V> get(byte[] key);
 
@@ -53,7 +53,7 @@ public interface MongoDBCache<K, V> {
     * we have to sort and do a less than on the last id.
     *
     * @param lastKey
-    * @return
+    * @return a list of entries corresponding to a "page" ending with lastKey
     */
    List<MongoDBEntry<K, V>> getPagedEntries(byte[] lastKey);
 
@@ -72,8 +72,5 @@ public interface MongoDBCache<K, V> {
 
    void start() throws Exception;
 
-   /***
-    *
-    */
    void stop();
 }

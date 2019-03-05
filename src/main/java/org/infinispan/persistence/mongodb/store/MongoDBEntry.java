@@ -8,7 +8,7 @@ import java.util.Date;
  * This is a representation of a MongoDBStore entry. <br/>
  * This class IS NOT persisted to MongoDB, only its byte array and expiryTime attributes.
  *
- * @author Gabriel Francisco <gabfssilva@gmail.com>
+ * @author Gabriel Francisco &lt;gabfssilva@gmail.com&gt;
  */
 public class MongoDBEntry<K, V> {
    private K key;

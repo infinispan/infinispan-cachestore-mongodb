@@ -14,8 +14,8 @@ import static org.infinispan.commons.util.StringPropertyReplacer.replaceProperti
  * Parses the configuration from the XML. For valid elements and attributes refer to {@link Element} and {@link
  * Attribute}
  *
- * @author Guillaume Scheibel <guillaume.scheibel@gmail.com>
- * @author Gabriel Francisco <gabfssilva@gmail.com>
+ * @author Guillaume Scheibel &lt;guillaume.scheibel@gmail.com&gt;
+ * @author Gabriel Francisco &lt;gabfssilva@gmail.com&gt;
  * @author gustavonalle
  */
 @Namespace(uri = "urn:infinispan:store:mongodb:9.4", root = "mongodbStore")
