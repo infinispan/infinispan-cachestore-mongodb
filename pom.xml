@@ -4,7 +4,7 @@
 
     <groupId>org.infinispan</groupId>
     <artifactId>infinispan-cachestore-mongodb</artifactId>
-    <version>9.4.0.Final</version>
+    <version>9.4.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Infinispan MongoDB CacheStore</name>
     <description>Infinispan MongoDB CacheStore module</description>
@@ -61,7 +61,7 @@
         <connection>scm:git:git@github.com:infinispan/infinispan-cachestore-mongodb.git</connection>
         <developerConnection>scm:git:git@github.com:infinispan/infinispan-cachestore-mongodb.git</developerConnection>
         <url>https://github.com/infinispan/infinispan-cachestore-mongodb</url>
-      <tag>9.4.0.Final</tag>
+      <tag>HEAD</tag>
   </scm>
 
     <distributionManagement>
