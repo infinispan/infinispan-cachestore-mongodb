@@ -4,7 +4,7 @@
         attributeFormDefault="unqualified"
         elementFormDefault="qualified"
         version="1.0"
-        targetNamespace="urn:infinispan:store:mongodb:9.4">
+        targetNamespace="urn:infinispan:config:mongodb-store:14.0">
 
     <xs:complexType name="mongodbStore">
         <xs:annotation>
