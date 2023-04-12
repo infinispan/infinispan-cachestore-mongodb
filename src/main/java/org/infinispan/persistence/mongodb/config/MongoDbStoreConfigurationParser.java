@@ -105,6 +105,10 @@ public class MongoDbStoreConfigurationParser implements ConfigurationParser {
                     connectionBuilder.uri(value);
                     break;
                 }
+                case DATABASE: {
+                    connectionBuilder.database(value);
+                    break;
+                }
                 case COLLECTION: {
                     connectionBuilder.collection(value);
                     break;
