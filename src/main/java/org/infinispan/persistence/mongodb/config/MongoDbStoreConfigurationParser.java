@@ -49,13 +49,8 @@ public class MongoDbStoreConfigurationParser implements ConfigurationParser {
 
         Element element = Element.forName(reader.getLocalName());
         switch (element) {
-            case MONGODB_STORE: {
-                parseMongoDbStoreElement(reader, builder.persistence());
-                break;
-            }
-            default: {
-                throw ParseUtils.unexpectedElement(reader);
-            }
+            case MONGODB_STORE -> parseMongoDbStoreElement(reader, builder.persistence());
+            default -> throw ParseUtils.unexpectedElement(reader);
         }
     }
 
@@ -67,26 +62,16 @@ public class MongoDbStoreConfigurationParser implements ConfigurationParser {
             String value = replaceProperties(reader.getAttributeValue(i));
             Attribute attribute = Attribute.forName(reader.getAttributeName(i));
             switch (attribute) {
-                case CONVERTER: {
-                    storeBuilder.converter(value);
-                    break;
-                }
-                default: {
-                    CacheParser.parseStoreAttribute(reader, i, storeBuilder);
-                }
+                case CONVERTER -> storeBuilder.converter(value);
+                default -> CacheParser.parseStoreAttribute(reader, i, storeBuilder);
             }
         }
 
         while (reader.inTag()) {
             Element element = Element.forName(reader.getLocalName());
             switch (element) {
-                case CONNECTION: {
-                    this.parseConnectionElement(reader, storeBuilder);
-                    break;
-                }
-                default: {
-                    CacheParser.parseStoreElement(reader, storeBuilder);
-                }
+                case CONNECTION -> parseConnectionElement(reader, storeBuilder);
+                default -> CacheParser.parseStoreElement(reader, storeBuilder);
             }
         }
 
@@ -101,21 +86,10 @@ public class MongoDbStoreConfigurationParser implements ConfigurationParser {
             String value = replaceProperties(reader.getAttributeValue(i));
             Attribute attribute = Attribute.forName(reader.getAttributeName(i));
             switch (attribute) {
-                case CONNECTION_URI: {
-                    connectionBuilder.uri(value);
-                    break;
-                }
-                case DATABASE: {
-                    connectionBuilder.database(value);
-                    break;
-                }
-                case COLLECTION: {
-                    connectionBuilder.collection(value);
-                    break;
-                }
-                default: {
-                    throw ParseUtils.unexpectedAttribute(reader, i);
-                }
+                case CONNECTION_URI -> connectionBuilder.uri(value);
+                case DATABASE -> connectionBuilder.database(value);
+                case COLLECTION -> connectionBuilder.collection(value);
+                default -> throw ParseUtils.unexpectedAttribute(reader, i);
             }
         }
 
