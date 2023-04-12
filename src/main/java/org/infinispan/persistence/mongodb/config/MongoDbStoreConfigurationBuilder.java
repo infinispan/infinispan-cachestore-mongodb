@@ -3,9 +3,9 @@ package org.infinispan.persistence.mongodb.config;
 import org.infinispan.commons.configuration.Builder;
 import org.infinispan.configuration.cache.AbstractStoreConfigurationBuilder;
 import org.infinispan.configuration.cache.PersistenceConfigurationBuilder;
-import org.infinispan.persistence.mongodb.ConverterType;
+import org.infinispan.persistence.mongodb.DataFormat;
 
-import static org.infinispan.persistence.mongodb.config.Attribute.CONVERTER;
+import static org.infinispan.persistence.mongodb.config.Attribute.FORMAT;
 
 
 /**
@@ -22,12 +22,12 @@ public class MongoDbStoreConfigurationBuilder extends AbstractStoreConfiguration
         this.connectionConfigurationBuilder = new ConnectionConfigurationBuilder(this);
     }
 
-    public MongoDbStoreConfigurationBuilder converter(String converter) {
-        return converter(ConverterType.valueOf(converter.toUpperCase()));
+    public MongoDbStoreConfigurationBuilder format(String format) {
+        return format(DataFormat.valueOf(format.toUpperCase()));
     }
 
-    public MongoDbStoreConfigurationBuilder converter(ConverterType converter) {
-        attributes.attribute(CONVERTER).set(converter);
+    public MongoDbStoreConfigurationBuilder format(DataFormat format) {
+        attributes.attribute(FORMAT).set(format);
         return this;
     }
 

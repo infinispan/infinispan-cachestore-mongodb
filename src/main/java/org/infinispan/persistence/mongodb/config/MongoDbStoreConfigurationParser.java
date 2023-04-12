@@ -62,7 +62,7 @@ public class MongoDbStoreConfigurationParser implements ConfigurationParser {
             String value = replaceProperties(reader.getAttributeValue(i));
             Attribute attribute = Attribute.forName(reader.getAttributeName(i));
             switch (attribute) {
-                case CONVERTER -> storeBuilder.converter(value);
+                case FORMAT -> storeBuilder.format(value);
                 default -> CacheParser.parseStoreAttribute(reader, i, storeBuilder);
             }
         }

@@ -10,7 +10,7 @@ public enum Attribute {
     CONNECTION_URI("uri"),
     DATABASE("database"),
     COLLECTION("collection"),
-    CONVERTER("converter");
+    FORMAT("format");
 
     private static final Map<String, Attribute> attributes;
 

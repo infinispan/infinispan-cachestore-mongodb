@@ -34,12 +34,12 @@ import static org.testng.AssertJUnit.assertNotNull;
 
 
 /**
- * Functional test for {@link MongoDbStore} using json converter.
+ * Functional test for {@link MongoDbStore} using the {@link DataFormat#STRUCTURED} format.
  *
  * @author Antonio Macrì &lt;ing.antonio.macri@gmail.com&gt;
  */
-@Test(groups = "functional", testName = "org.infinispan.persistence.mongodb.MongoDbStoreWithJsonConverterFunctionalTest")
-public class MongoDbStoreWithJsonConverterFunctionalTest extends BaseStoreFunctionalTest {
+@Test(groups = "functional", testName = "org.infinispan.persistence.mongodb.MongoDbStoreWithStructuredFormatFunctionalTest")
+public class MongoDbStoreWithStructuredFormatFunctionalTest extends BaseStoreFunctionalTest {
 
     private static final String DATABASE = "databaseName";
     private static final String COLLECTION = "collectionName";
@@ -71,7 +71,7 @@ public class MongoDbStoreWithJsonConverterFunctionalTest extends BaseStoreFuncti
         persistence
                 .addStore(MongoDbStoreConfigurationBuilder.class)
                 .preload(preload)
-                .converter(ConverterType.JSON)
+                .format(DataFormat.STRUCTURED)
                 .connection()
                 .uri(mongoDbContainer.getConnectionString() + "/" + DATABASE + "?connectTimeoutMS=1000&w=1")
                 .collection(COLLECTION);

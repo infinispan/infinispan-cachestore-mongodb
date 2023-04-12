@@ -7,7 +7,7 @@ import org.infinispan.commons.configuration.attributes.AttributeSet;
 import org.infinispan.configuration.cache.AbstractStoreConfiguration;
 import org.infinispan.configuration.cache.AsyncStoreConfiguration;
 import org.infinispan.configuration.serializing.SerializedWith;
-import org.infinispan.persistence.mongodb.ConverterType;
+import org.infinispan.persistence.mongodb.DataFormat;
 import org.infinispan.persistence.mongodb.MongoDbStore;
 
 
@@ -23,24 +23,24 @@ import org.infinispan.persistence.mongodb.MongoDbStore;
 @SerializedWith(MongoDbStoreConfigurationSerializer.class)
 public class MongoDbStoreConfiguration extends AbstractStoreConfiguration {
 
-    static final AttributeDefinition<ConverterType> CONVERTER = AttributeDefinition.builder(Attribute.CONVERTER, null, ConverterType.class).immutable().build();
+    static final AttributeDefinition<DataFormat> FORMAT = AttributeDefinition.builder(Attribute.FORMAT, null, DataFormat.class).immutable().build();
 
     public static AttributeSet attributeDefinitionSet() {
-        return new AttributeSet(MongoDbStoreConfiguration.class, AbstractStoreConfiguration.attributeDefinitionSet(), CONVERTER);
+        return new AttributeSet(MongoDbStoreConfiguration.class, AbstractStoreConfiguration.attributeDefinitionSet(), FORMAT);
     }
 
 
-    private final org.infinispan.commons.configuration.attributes.Attribute<ConverterType> converter;
+    private final org.infinispan.commons.configuration.attributes.Attribute<DataFormat> format;
     private final ConnectionConfiguration connectionConfiguration;
 
     public MongoDbStoreConfiguration(AttributeSet attributes, AsyncStoreConfiguration async, ConnectionConfiguration connectionConfiguration) {
         super(attributes, async);
-        this.converter = attributes.attribute(CONVERTER);
+        this.format = attributes.attribute(FORMAT);
         this.connectionConfiguration = connectionConfiguration;
     }
 
-    public ConverterType converter() {
-        return converter.get();
+    public DataFormat format() {
+        return format.get();
     }
 
     public ConnectionConfiguration connection() {

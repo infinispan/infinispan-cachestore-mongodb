@@ -23,7 +23,7 @@ import org.infinispan.persistence.mongodb.config.ConnectionConfiguration;
 import org.infinispan.persistence.mongodb.config.MongoDbStoreConfiguration;
 import org.infinispan.persistence.mongodb.converter.BinaryCacheToStoreConverter;
 import org.infinispan.persistence.mongodb.converter.CacheToStoreConverter;
-import org.infinispan.persistence.mongodb.converter.JsonCacheToStoreConverter;
+import org.infinispan.persistence.mongodb.converter.StructuredCacheToStoreConverter;
 import org.infinispan.persistence.spi.InitializationContext;
 import org.infinispan.persistence.spi.MarshallableEntry;
 import org.infinispan.persistence.spi.NonBlockingStore;
@@ -43,7 +43,7 @@ import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Filters.gt;
 import static com.mongodb.client.model.Filters.lte;
 import static com.mongodb.client.model.Filters.or;
-import static org.infinispan.persistence.mongodb.ConverterType.JSON;
+import static org.infinispan.persistence.mongodb.DataFormat.STRUCTURED;
 
 
 /**
@@ -79,8 +79,8 @@ public class MongoDbStore<K, V> implements NonBlockingStore<K, V> {
         MongoDbStoreConfiguration configuration = ctx.getConfiguration();
         ConnectionConfiguration connectionConfiguration = configuration.connection();
 
-        this.cacheToStoreConverter = configuration.converter() == JSON
-                ? new JsonCacheToStoreConverter<>(ctx, ctx.getPersistenceMarshaller())
+        this.cacheToStoreConverter = configuration.format() == STRUCTURED
+                ? new StructuredCacheToStoreConverter<>(ctx, ctx.getPersistenceMarshaller())
                 : new BinaryCacheToStoreConverter<>(ctx, ctx.getPersistenceMarshaller());
 
         String connectionUri = connectionConfiguration.uri();

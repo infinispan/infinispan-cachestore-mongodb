@@ -11,11 +11,11 @@ import org.infinispan.factories.ComponentRegistry;
 import org.infinispan.persistence.spi.InitializationContext;
 
 
-public class JsonCacheToStoreConverter<K, V> extends AbstractCacheToStoreConverter<K, V> {
+public class StructuredCacheToStoreConverter<K, V> extends AbstractCacheToStoreConverter<K, V> {
     private final DataConversion keyDataConversion;
     private final DataConversion valueDataConversion;
 
-    public JsonCacheToStoreConverter(InitializationContext context, Marshaller marshaller) {
+    public StructuredCacheToStoreConverter(InitializationContext context, Marshaller marshaller) {
         super(context, marshaller);
 
         @SuppressWarnings("unchecked")

@@ -3,7 +3,7 @@ package org.infinispan.persistence.mongodb.config;
 import org.infinispan.commons.CacheConfigurationException;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.infinispan.persistence.mongodb.ConverterType;
+import org.infinispan.persistence.mongodb.DataFormat;
 import org.testng.annotations.Test;
 
 import static org.testng.AssertJUnit.assertEquals;
@@ -103,21 +103,21 @@ public class MongoDbStoreConfigurationBuilderTest {
         ConfigurationBuilder builder = new ConfigurationBuilder();
         MongoDbStoreConfigurationBuilder mongoDbStoreConfigurationBuilder = builder.persistence().addStore(MongoDbStoreConfigurationBuilder.class);
         mongoDbStoreConfigurationBuilder.async().enable();
-        mongoDbStoreConfigurationBuilder.converter("binary");
+        mongoDbStoreConfigurationBuilder.format("binary");
         mongoDbStoreConfigurationBuilder.connection().uri(CONNECTION_URI_WITH_DATABASE);
         mongoDbStoreConfigurationBuilder.connection().collection(COLLECTION);
         Configuration config = builder.build();
 
         MongoDbStoreConfiguration storeConfig = (MongoDbStoreConfiguration) config.persistence().stores().get(0);
 
-        assertEquals(ConverterType.BINARY, storeConfig.converter());
+        assertEquals(DataFormat.BINARY, storeConfig.format());
 
         builder = new ConfigurationBuilder();
         builder.persistence().addStore(MongoDbStoreConfigurationBuilder.class).read(storeConfig);
         config = builder.build();
         storeConfig = (MongoDbStoreConfiguration) config.persistence().stores().get(0);
 
-        assertEquals(ConverterType.BINARY, storeConfig.converter());
+        assertEquals(DataFormat.BINARY, storeConfig.format());
     }
 
     @Test
