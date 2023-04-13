@@ -18,4 +18,7 @@ public interface Log extends BasicLogger {
 
     @Message(value = "Duplicate database name configured ('%s' vs '%s'). Either specify it in the 'uri' or use the 'database' config.", id = 24002)
     PersistenceException duplicateDatabase(String uriDatabase, String configDatabase);
+
+    @Message(value = "Collection name not configured.", id = 24003)
+    PersistenceException missingCollection();
 }

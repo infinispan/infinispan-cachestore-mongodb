@@ -98,6 +98,16 @@ public class MongoDbStoreConfigurationBuilderTest {
         Configuration ignored = builder.build();
     }
 
+    @Test(expectedExceptions = CacheConfigurationException.class, expectedExceptionsMessageRegExp =
+            ".*Collection name not configured\\.")
+    public void testBuildWithoutCollection() {
+        ConfigurationBuilder builder = new ConfigurationBuilder();
+        MongoDbStoreConfigurationBuilder mongoDbStoreConfigurationBuilder = builder.persistence().addStore(MongoDbStoreConfigurationBuilder.class);
+        mongoDbStoreConfigurationBuilder.async().enable();
+        mongoDbStoreConfigurationBuilder.connection().uri(CONNECTION_URI_WITH_DATABASE);
+        Configuration ignored = builder.build();
+    }
+
     @Test
     public void testBuildWithConverter() {
         ConfigurationBuilder builder = new ConfigurationBuilder();

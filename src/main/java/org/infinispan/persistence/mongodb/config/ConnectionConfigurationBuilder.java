@@ -57,6 +57,11 @@ public class ConnectionConfigurationBuilder implements Builder<ConnectionConfigu
         if (uriDatabase != null && !uriDatabase.isBlank() && configDatabase != null && !configDatabase.isBlank()) {
             throw log.duplicateDatabase(uriDatabase, configDatabase);
         }
+
+        String collection = attributes.<String>attribute(COLLECTION).get();
+        if (collection == null || collection.isBlank()) {
+            throw log.missingCollection();
+        }
     }
 
     @Override
