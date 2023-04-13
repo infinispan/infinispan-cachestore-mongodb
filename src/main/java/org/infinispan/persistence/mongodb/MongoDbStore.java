@@ -32,10 +32,8 @@ import org.kohsuke.MetaInfServices;
 import org.reactivestreams.Publisher;
 
 import java.util.EnumSet;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Predicate;
 
@@ -122,11 +120,6 @@ public class MongoDbStore<K, V> implements NonBlockingStore<K, V> {
         return Single.fromPublisher(collection.estimatedDocumentCount()).toCompletionStage();
     }
 
-
-    @Override
-    public CompletionStage<Boolean> containsKey(int segment, Object key) {
-        return load(segment, key).thenApply(Objects::nonNull);
-    }
 
     @Override
     public CompletionStage<MarshallableEntry<K, V>> load(int segment, Object key) {
