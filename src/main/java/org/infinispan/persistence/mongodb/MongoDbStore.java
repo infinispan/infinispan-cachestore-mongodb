@@ -55,6 +55,7 @@ import static org.infinispan.persistence.mongodb.DataFormat.STRUCTURED;
 public class MongoDbStore<K, V> implements NonBlockingStore<K, V> {
     public static final String VALUE = "value";
     public static final String METADATA = "metadata";
+    public static final String INTERNAL_METADATA = "internalMetadata";
     public static final String EXPIRY_TIME = "expiryTime";
     public static final String CREATED = "created";
     public static final String LAST_USED = "lastUsed";

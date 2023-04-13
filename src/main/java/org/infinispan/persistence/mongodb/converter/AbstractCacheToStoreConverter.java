@@ -4,6 +4,7 @@ import org.bson.Document;
 import org.bson.types.Binary;
 import org.infinispan.commons.marshall.Marshaller;
 import org.infinispan.metadata.Metadata;
+import org.infinispan.metadata.impl.PrivateMetadata;
 import org.infinispan.persistence.spi.InitializationContext;
 import org.infinispan.persistence.spi.MarshallableEntry;
 import org.infinispan.util.logging.Log;
@@ -13,6 +14,7 @@ import java.io.IOException;
 
 import static org.infinispan.persistence.mongodb.MongoDbStore.CREATED;
 import static org.infinispan.persistence.mongodb.MongoDbStore.EXPIRY_TIME;
+import static org.infinispan.persistence.mongodb.MongoDbStore.INTERNAL_METADATA;
 import static org.infinispan.persistence.mongodb.MongoDbStore.LAST_USED;
 import static org.infinispan.persistence.mongodb.MongoDbStore.METADATA;
 import static org.infinispan.persistence.mongodb.MongoDbStore.VALUE;
@@ -35,6 +37,7 @@ public abstract class AbstractCacheToStoreConverter<K, V> implements CacheToStor
         Document document = new Document("_id", storeKey)
                 .append(VALUE, toStoreValue(marshallableEntry.getValue()))
                 .append(METADATA, toByteArray(marshallableEntry.getMetadata()))
+                .append(INTERNAL_METADATA, toByteArray(marshallableEntry.getInternalMetadata()))
                 .append(EXPIRY_TIME, marshallableEntry.expiryTime())
                 .append(CREATED, marshallableEntry.created())
                 .append(LAST_USED, marshallableEntry.lastUsed());
@@ -45,15 +48,17 @@ public abstract class AbstractCacheToStoreConverter<K, V> implements CacheToStor
     public MarshallableEntry<K, V> toCacheEntry(Object cacheKey, Document document) {
         Object storeValue = document.get(VALUE);
         Binary metadataBinary = (Binary) document.get(METADATA);
+        Binary internalMetadataBinary = (Binary) document.get(INTERNAL_METADATA);
         Long created = document.getLong(CREATED);
         Long lastUsed = document.getLong(LAST_USED);
 
         Object cacheValue = storeValue == null ? null : toCacheValue(storeValue);
         Metadata metadata = metadataBinary == null ? null : (Metadata) toObject(metadataBinary.getData());
+        PrivateMetadata internalMetadata = internalMetadataBinary == null ? null : (PrivateMetadata) toObject(internalMetadataBinary.getData());
 
         @SuppressWarnings("unchecked")
         MarshallableEntry<K, V> result = (MarshallableEntry<K, V>) context.getMarshallableEntryFactory()
-                .create(cacheKey, cacheValue, metadata, null, created == null ? -1 : created, lastUsed == null ? -1 : lastUsed);
+                .create(cacheKey, cacheValue, metadata, internalMetadata, created == null ? -1 : created, lastUsed == null ? -1 : lastUsed);
         return result;
     }
 
