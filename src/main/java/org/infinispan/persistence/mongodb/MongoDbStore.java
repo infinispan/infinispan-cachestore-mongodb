@@ -19,6 +19,7 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.infinispan.commons.configuration.ConfiguredBy;
 import org.infinispan.commons.util.IntSet;
+import org.infinispan.commons.util.concurrent.CompletableFutures;
 import org.infinispan.persistence.mongodb.config.ConnectionConfiguration;
 import org.infinispan.persistence.mongodb.config.MongoDbStoreConfiguration;
 import org.infinispan.persistence.mongodb.converter.BinaryCacheToStoreConverter;
@@ -101,13 +102,13 @@ public class MongoDbStore<K, V> implements NonBlockingStore<K, V> {
         MongoDatabase database = mongoClient.getDatabase(databaseName);
         this.collection = database.getCollection(collectionName);
 
-        return CompletableFuture.completedFuture(null);
+        return CompletableFutures.completedNull();
     }
 
     @Override
     public CompletionStage<Void> stop() {
         mongoClient.close();
-        return CompletableFuture.completedFuture(null);
+        return CompletableFutures.completedNull();
     }
 
 
