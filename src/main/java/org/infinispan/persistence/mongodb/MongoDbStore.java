@@ -119,7 +119,7 @@ public class MongoDbStore<K, V> implements NonBlockingStore<K, V> {
 
     @Override
     public CompletionStage<Long> approximateSize(IntSet segments) {
-        return size(segments);
+        return Single.fromPublisher(collection.estimatedDocumentCount()).toCompletionStage();
     }
 
 
