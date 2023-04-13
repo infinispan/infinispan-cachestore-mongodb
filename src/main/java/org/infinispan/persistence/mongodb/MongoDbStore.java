@@ -150,7 +150,7 @@ public class MongoDbStore<K, V> implements NonBlockingStore<K, V> {
         query.put("_id", cacheToStoreConverter.toStoreKey(key));
 
         return Single.fromPublisher(collection.deleteOne(query))
-                .map(e -> e.getDeletedCount() > 0)
+                .map(e -> !e.wasAcknowledged() ? null : e.getDeletedCount() > 0)
                 .toCompletionStage();
     }
 
