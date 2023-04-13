@@ -3,13 +3,13 @@
     <cache-container>
         <local-cache name="cache">
             <persistence passivation="false">
-                <mongodbStore xmlns="urn:infinispan:config:mongodb-store:14.0">
+                <mongodb-store xmlns="urn:infinispan:config:mongodb-store:15.0">
                     <connection
                             uri="mongodb://mongoUser:mongoPass@localhost:27017/?w=0&amp;connectTimeoutMS=2000"
                             database="infinispan_test_database"
                             collection="infinispan_cachestore"/>
                     <write-behind />
-                </mongodbStore>
+                </mongodb-store>
             </persistence>
         </local-cache>
     </cache-container>

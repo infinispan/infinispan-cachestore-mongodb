@@ -5,7 +5,7 @@
 
     <groupId>org.infinispan</groupId>
     <artifactId>infinispan-cachestore-mongodb</artifactId>
-    <version>14.0.8-SNAPSHOT</version>
+    <version>15.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Infinispan MongoDB CacheStore</name>
     <description>Infinispan MongoDB CacheStore</description>
@@ -102,7 +102,7 @@
         <maven.compiler.release>17</maven.compiler.release>
         <build.directory>${project.build.directory}</build.directory>
 
-        <version.infinispan>14.0.7.Final</version.infinispan>
+        <version.infinispan>15.0.0-SNAPSHOT</version.infinispan>
         <version.mongo.driver>4.9.0</version.mongo.driver>
         <version.testng>7.7.0</version.testng>
     </properties>
