@@ -30,17 +30,15 @@ public class MongoDbStoreConfiguration extends AbstractStoreConfiguration {
     }
 
 
-    private final org.infinispan.commons.configuration.attributes.Attribute<DataFormat> format;
     private final ConnectionConfiguration connectionConfiguration;
 
     public MongoDbStoreConfiguration(AttributeSet attributes, AsyncStoreConfiguration async, ConnectionConfiguration connectionConfiguration) {
         super(attributes, async);
-        this.format = attributes.attribute(FORMAT);
         this.connectionConfiguration = connectionConfiguration;
     }
 
     public DataFormat format() {
-        return format.get();
+        return attributes.attribute(FORMAT).get();
     }
 
     public ConnectionConfiguration connection() {
