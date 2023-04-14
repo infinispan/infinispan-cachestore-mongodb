@@ -170,9 +170,11 @@ public class MongoDbStore<K, V> implements NonBlockingStore<K, V> {
                 iterable.projection(Projections.include("_id"));
             }
 
-            return Flowable.fromPublisher(iterable)
-                    .filter(e -> filter == null || filter.test(cacheToStoreConverter.toCacheKey(e.get("_id"))))
-                    .map(cacheToStoreConverter::toCacheEntry);
+            Flowable<Document> flowable = Flowable.fromPublisher(iterable);
+            if (filter != null) {
+                flowable = flowable.filter(e -> filter.test(cacheToStoreConverter.toCacheKey(e.get("_id"))));
+            }
+            return flowable.map(cacheToStoreConverter::toCacheEntry);
         });
     }
 
