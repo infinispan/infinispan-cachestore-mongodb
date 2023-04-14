@@ -164,7 +164,7 @@ public class MongoDbStore<K, V> implements NonBlockingStore<K, V> {
     @Override
     public Publisher<MarshallableEntry<K, V>> publishEntries(IntSet segments, Predicate<? super K> filter, boolean includeValues) {
         return Flowable.defer(() -> {
-            FindPublisher<Document> iterable = collection.find();
+            FindPublisher<Document> iterable = collection.find().batchSize(context.getConfiguration().maxBatchSize());
 
             if (!includeValues) {
                 iterable.projection(Projections.include("_id"));
