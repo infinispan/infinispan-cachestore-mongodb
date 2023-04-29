@@ -3,8 +3,11 @@ package org.infinispan.persistence.mongodb;
 import com.mongodb.BasicDBObject;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
+import com.mongodb.client.model.DeleteOneModel;
 import com.mongodb.client.model.Projections;
+import com.mongodb.client.model.ReplaceOneModel;
 import com.mongodb.client.model.ReplaceOptions;
+import com.mongodb.client.model.WriteModel;
 import com.mongodb.client.result.UpdateResult;
 import com.mongodb.reactivestreams.client.FindPublisher;
 import com.mongodb.reactivestreams.client.MongoClient;
@@ -152,6 +155,29 @@ public class MongoDbStore<K, V> implements NonBlockingStore<K, V> {
         return Single.fromPublisher(collection.deleteOne(query))
                 .map(e -> !e.wasAcknowledged() ? null : e.getDeletedCount() > 0)
                 .toCompletionStage();
+    }
+
+    @Override
+    public CompletionStage<Void> batch(int publisherCount, Publisher<SegmentedPublisher<Object>> removePublisher, Publisher<SegmentedPublisher<MarshallableEntry<K, V>>> writePublisher) {
+        Flowable<WriteModel<Document>> entriesWritten = Flowable.fromPublisher(writePublisher)
+                .concatMapEager(Flowable::fromPublisher, publisherCount, publisherCount)
+                .map(e -> {
+                    var storeKey = cacheToStoreConverter.toStoreKey(e.getKey());
+                    return new ReplaceOneModel<>(eq("_id", storeKey), cacheToStoreConverter.toStoreEntry(storeKey, e), new ReplaceOptions().upsert(true));
+                });
+
+        Flowable<WriteModel<Document>> removedKeys = Flowable.fromPublisher(removePublisher)
+                .concatMapEager(Flowable::fromPublisher, publisherCount, publisherCount)
+                .map(key -> {
+                    var storeKey = cacheToStoreConverter.toStoreKey(key);
+                    return new DeleteOneModel<>(eq("_id", storeKey));
+                });
+
+        return Flowable.concatArrayEager(entriesWritten, removedKeys)
+                .buffer(context.getConfiguration().maxBatchSize())
+                .concatMap(writeModels -> Flowable.fromPublisher(collection.bulkWrite(writeModels)))
+                .ignoreElements()
+                .toCompletionStage(null);
     }
 
     @Override
