@@ -31,7 +31,7 @@
                         </xs:annotation>
                     </xs:element>
                 </xs:sequence>
-                <xs:attribute name="type" type="tns:mongodb-format" default="binary">
+                <xs:attribute name="format" type="tns:mongodb-format" default="binary">
                     <xs:annotation>
                         <xs:documentation>
                             The format to be used by the MongoDB store to persist keys and values.

@@ -109,7 +109,7 @@ public class MongoDbStoreConfigurationBuilderTest {
     }
 
     @Test
-    public void testBuildWithConverter() {
+    public void testBuildWithFormat() {
         ConfigurationBuilder builder = new ConfigurationBuilder();
         MongoDbStoreConfigurationBuilder mongoDbStoreConfigurationBuilder = builder.persistence().addStore(MongoDbStoreConfigurationBuilder.class);
         mongoDbStoreConfigurationBuilder.async().enable();
