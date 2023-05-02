@@ -4,14 +4,13 @@ The Infinispan Community
 
 == Introduction
 
-The MongoDB cache store persists data in link:https://www.mongodb.com[MongoDB].
-To communicate with the MongoDB server instance, we are using the official Java reactive driver (`org.mongodb:mongodb-driver-reactivestreams`).
-
-To configure the cache store, you just need to add a new entry into the persistence section.
+Infinispan's MongoDB store can be used to persist cache data in link:https://www.mongodb.com[MongoDB].
+To communicate with the MongoDB server instance, it uses the official Java reactive driver (`org.mongodb:mongodb-driver-reactivestreams`).
 
 === Sample usage
 
-Here is an example for your xml configuration file:
+To configure the cache store, you just need to add a new entry into the persistence section of your configuration file.
+Here is an XML example:
 
 .infinispan.xml
 [source,xml]
@@ -49,13 +48,13 @@ The `connection` section contains the information to connect to the MongoDB serv
 | collection | The collection which will contain the elements. |
 |==============================================================
 
-The `format` attribute specifies how the documents should be constructed.
+The `mongodb-store` element has an optional `format` attribute, which specifies how the documents should be constructed.
 
 [options="header"]
 |==============================================================
-| value      | meaning
-| binary     | The key and value of cache entries are stored within the MongoDB
-               document as binary blobs. This should be the most efficient way.
-| structured | The key and value of cache entries are stored in a structured (BSON)
-               format. This allows to inspect them easily on MongoDB.
+| value              | meaning
+| `binary` (default) | The key and value of cache entries are stored within the MongoDB
+                       document as binary blobs. This should be the most efficient way.
+| `structured`       | The key and value of cache entries are stored in a structured (BSON)
+                       format. This allows to inspect them easily on MongoDB.
 |==============================================================
