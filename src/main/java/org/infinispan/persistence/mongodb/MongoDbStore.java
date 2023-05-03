@@ -35,7 +35,6 @@ import org.kohsuke.MetaInfServices;
 import org.reactivestreams.Publisher;
 
 import java.util.EnumSet;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Predicate;
@@ -191,7 +190,6 @@ public class MongoDbStore<K, V> implements NonBlockingStore<K, V> {
     public Publisher<MarshallableEntry<K, V>> publishEntries(IntSet segments, Predicate<? super K> filter, boolean includeValues) {
         return Flowable.defer(() -> {
             FindPublisher<Document> iterable = collection.find().batchSize(context.getConfiguration().maxBatchSize());
-
             if (!includeValues) {
                 iterable.projection(Projections.include("_id"));
             }
@@ -207,10 +205,10 @@ public class MongoDbStore<K, V> implements NonBlockingStore<K, V> {
     @Override
     public Publisher<MarshallableEntry<K, V>> purgeExpired() {
         long now = context.getTimeService().wallClockTime();
-        Bson filter = and(lte(EXPIRY_TIME, now), gt(EXPIRY_TIME, -1L));
 
-        return Flowable.fromPublisher(collection.find(filter))
-                .map(cacheToStoreConverter::toCacheEntry)
-                .concatWith(Flowable.defer(() -> Flowable.fromPublisher(collection.deleteMany(filter)).mapOptional(x -> Optional.empty())));
+        return Flowable.fromPublisher(collection.find(and(lte(EXPIRY_TIME, now), gt(EXPIRY_TIME, -1L))).projection(Projections.include("_id")))
+                .map(docWithId -> docWithId.get("_id"))
+                .concatMap(id -> collection.findOneAndDelete(and(eq("_id", id), lte(EXPIRY_TIME, now), gt(EXPIRY_TIME, -1L))))
+                .map(cacheToStoreConverter::toCacheEntry);
     }
 }
