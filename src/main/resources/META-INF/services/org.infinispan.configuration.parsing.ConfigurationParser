@@ -1,2 +1,0 @@
-org.infinispan.configuration.parsing.Parser
-org.infinispan.persistence.mongodb.configuration.parser.MongoDBCacheStoreConfigurationParser

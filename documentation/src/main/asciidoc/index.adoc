@@ -3,21 +3,23 @@ The Infinispan Community
 :icons: font
 
 == Introduction
-The MongoDB cache store persists data in link:http://www.mongodb.org[MongoDB].
-To communicate with the MongoDB server instance, we are using the official java driver version 3.0.4
-To configure the cache store, you just need to add a new entry into the persistence section.
+
+Infinispan's MongoDB store can be used to persist cache data in link:https://www.mongodb.com[MongoDB].
+To communicate with the MongoDB server instance, it uses the official Java reactive driver (`org.mongodb:mongodb-driver-reactivestreams`).
 
 === Sample usage
-Here is an example for your xml configuration file:
+
+To configure the cache store, you just need to add a new entry into the persistence section of your configuration file.
+Here is an XML example:
 
 .infinispan.xml
 [source,xml]
 ----
 
 <persistence>
-   <mongodbStore xmlns="urn:infinispan:config:mongodb:9.4" >
+    <mongodb-store xmlns="urn:infinispan:config:mongodb-store:15.0">
         <connection uri="mongodb://mongoUser:mongoPass@server1:27017,server2:27017/database?w=0&amp;connectTimeoutMS=2000" collection="infispan_cachestore"/>
-   </mongodbStore>
+    </mongodb-store>
 </persistence>
 
 ----
@@ -26,23 +28,33 @@ If you prefer the programmatic API here is a snippet:
 
 [source,java]
 ----
-
 ConfigurationBuilder b = new ConfigurationBuilder();
-b.persistence().addStore(MongoDBStoreConfigurationBuilder.class)
-   .connectionURI( "mongodb://localhost" )
-   .collection( "indexes" );
+b.persistence()
+    .addStore(MongoDbStoreConfigurationBuilder.class)
+    .connection()
+    .uri("mongodb://mongoUser:mongoPass@server1:27017,server2:27017/database?w=0&amp;connectTimeoutMS=2000")
+    .collection("infispan_cachestore");
 
 final Configuration config = b.build();
 ----
 
-The connection section contains the connection information to connect to the MongoDB server instance.
-The authentication section is optional, it allows you to specify username and password if you are using some.
-The storage section explicits where you will store the data.
+The `connection` section contains the information to connect to the MongoDB server instance.
 
 [options="header"]
-|===============
-|property|usage|default value
-|connectionURI| The MongoDB link:$$https://docs.mongodb.org/manual/reference/connection-string/$$[connection string]. | mongodb://localhost
-|collection| The collection which will contain the elements. | 
+|==============================================================
+| property   | usage | default value
+| uri        | The MongoDB link:$$https://docs.mongodb.org/manual/reference/connection-string/$$[connection string]. | `mongodb://localhost`
+| database   | The optional database name.                     | As specified from the `uri` property.
+| collection | The collection which will contain the elements. |
+|==============================================================
 
-|===============
+The `mongodb-store` element has an optional `format` attribute, which specifies how the documents should be constructed.
+
+[options="header"]
+|==============================================================
+| value              | meaning
+| `binary` (default) | The key and value of cache entries are stored within the MongoDB
+                       document as binary blobs. This should be the most efficient way.
+| `structured`       | The key and value of cache entries are stored in a structured (BSON)
+                       format. This allows to inspect them easily on MongoDB.
+|==============================================================

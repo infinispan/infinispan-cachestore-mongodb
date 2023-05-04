@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<infinispan>
+    <cache-container>
+        <local-cache name="cache">
+            <persistence passivation="false">
+                <mongodb-store xmlns="urn:infinispan:config:mongodb-store:15.0"
+                               format="structured">
+                    <connection
+                            uri="mongodb://mongoUser:mongoPass@localhost:27017/infinispan_test_database?w=0&amp;connectTimeoutMS=2000"
+                            collection="infinispan_cachestore"/>
+                    <write-behind/>
+                </mongodb-store>
+            </persistence>
+        </local-cache>
+    </cache-container>
+</infinispan>
