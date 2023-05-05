@@ -24,38 +24,14 @@
         </license>
     </licenses>
 
-    <developers>
-        <developer>
-            <id>placeholder</id>
-            <name>See http://infinispan.org for a complete list of contributors</name>
-        </developer>
-    </developers>
-
-    <mailingLists>
-        <mailingList>
-            <name>Infinispan Issues</name>
-            <subscribe>https://lists.jboss.org/mailman/listinfo/infinispan-issues</subscribe>
-            <unsubscribe>https://lists.jboss.org/mailman/listinfo/infinispan-issues</unsubscribe>
-            <post>infinispan-issues@lists.jboss.org</post>
-            <archive>http://lists.jboss.org/pipermail/infinispan-issues/</archive>
-        </mailingList>
-        <mailingList>
-            <name>Infinispan Developers</name>
-            <subscribe>https://lists.jboss.org/mailman/listinfo/infinispan-dev</subscribe>
-            <unsubscribe>https://lists.jboss.org/mailman/listinfo/infinispan-dev</unsubscribe>
-            <post>infinispan-dev@lists.jboss.org</post>
-            <archive>http://lists.jboss.org/pipermail/infinispan-dev/</archive>
-        </mailingList>
-    </mailingLists>
-
     <issueManagement>
         <system>jira</system>
         <url>https://issues.jboss.org/browse/ISPN</url>
     </issueManagement>
 
     <ciManagement>
-        <system>travis-ci</system>
-        <url>https://travis-ci.org/infinispan/infinispan-cachestore-mongodb/</url>
+        <system>GitHub Actions</system>
+        <url>https://github.com/infinispan/infinispan-cachestore-mongodb/actions</url>
     </ciManagement>
 
     <scm>
@@ -67,35 +43,17 @@
 
     <distributionManagement>
         <repository>
-            <id>jboss-releases-repository</id>
-            <name>JBoss Release Repository</name>
-            <url>${jboss.releases.repo.url}</url>
+            <id>${maven.releases.repo.id}</id>
+            <url>${maven.releases.repo.url}</url>
         </repository>
 
         <snapshotRepository>
-            <id>jboss-snapshots-repository</id>
-            <name>JBoss Snapshot Repository</name>
-            <url>${jboss.snapshots.repo.url}</url>
+            <id>${maven.snapshots.repo.id}</id>
+            <url>${maven.snapshots.repo.url}</url>
         </snapshotRepository>
     </distributionManagement>
 
-    <repositories>
-        <repository>
-            <id>JBoss.org Public Repository</id>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <url>https://repository.jboss.org/nexus/content/groups/public/</url>
-        </repository>
-    </repositories>
-
     <properties>
-        <jboss.releases.repo.url>https://repository.jboss.org/nexus/service/local/staging/deploy/maven2</jboss.releases.repo.url>
-        <jboss.snapshots.repo.url>https://repository.jboss.org/nexus/content/repositories/snapshots</jboss.snapshots.repo.url>
-
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
@@ -105,6 +63,16 @@
         <version.infinispan>15.0.0-SNAPSHOT</version.infinispan>
         <version.mongo.driver>4.9.0</version.mongo.driver>
         <version.testng>7.7.0</version.testng>
+
+        <version.maven.gpg>3.0.1</version.maven.gpg>
+        <version.maven.nexus-staging>1.6.13</version.maven.nexus-staging>
+
+        <!-- maven repository urls -->
+        <maven.releases.nexus.url>https://s01.oss.sonatype.org/</maven.releases.nexus.url>
+        <maven.releases.repo.id>ossrh</maven.releases.repo.id>
+        <maven.releases.repo.url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</maven.releases.repo.url>
+        <maven.snapshots.repo.id>ossrh</maven.snapshots.repo.id>
+        <maven.snapshots.repo.url>https://s01.oss.sonatype.org/content/repositories/snapshots</maven.snapshots.repo.url>
     </properties>
 
     <dependencyManagement>
@@ -177,6 +145,51 @@
     </dependencies>
 
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-scm-plugin</artifactId>
+                    <version>1.13.0</version>
+                    <configuration>
+                        <tag>${project.version}</tag>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <version>${version.maven.gpg}</version>
+                    <executions>
+                        <execution>
+                            <id>sign-artifacts</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>sign</goal>
+                            </goals>
+                            <configuration>
+                                <passphraseServerId>gpg.passphrase</passphraseServerId>
+                                <gpgArguments>
+                                    <arg>--pinentry-mode</arg>
+                                    <arg>loopback</arg>
+                                </gpgArguments>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.sonatype.plugins</groupId>
+                    <artifactId>nexus-staging-maven-plugin</artifactId>
+                    <version>${version.maven.nexus-staging}</version>
+                    <extensions>true</extensions>
+                    <configuration>
+                        <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                        <stagingDescription>${project.description} ${project.version} release</stagingDescription>
+                        <nexusUrl>${maven.releases.nexus.url}</nexusUrl>
+                        <serverId>${maven.releases.repo.id}</serverId>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <!-- enforce java 11 and maven 3.2 -->
             <plugin>
@@ -255,4 +268,20 @@
         </plugins>
     </build>
 
+    <profiles>
+        <profile>
+            <id>community-release</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
