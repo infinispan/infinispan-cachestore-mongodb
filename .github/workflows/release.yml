@@ -24,22 +24,8 @@ jobs:
         with:
           ref: ${{ github.event.inputs.branch }}
 
-      # We must build the Infinispan snapshot first so that we can execute the mvn versions:set commands
-      - name: Checkout Infinispan repo
-        uses: actions/checkout@v2
-        with:
-          repository: infinispan/infinispan
-          path: infinispan
-          ref: ${{ github.event.inputs.branch }}
-
-      - name: Build Infinispan SNAPSHOT
-        run: ./mvnw install -s maven-settings.xml -am -pl core -DskipTests
-        working-directory: infinispan
-
       - name: Set release version
-        run: |
-          ./mvnw -B versions:set -DnewVersion=${{ github.event.inputs.version }} -DprocessAllModules=true
-          ./mvnw -B versions:set-property -Dproperty=version.infinispan -DnewVersion=${{ github.event.inputs.version }}
+        run: ./mvnw -B versions:set -DnewVersion=${{ github.event.inputs.version }} -DprocessAllModules=true
 
       - name: Set up Java for publishing to OSSRH
         uses: actions/setup-java@v3
@@ -73,7 +59,6 @@ jobs:
       - name: Next Version
         run: |
           ./mvnw -B versions:set -DnewVersion=${{ github.event.inputs.nextVersion }} -DprocessAllModules=true
-          ./mvnw -B versions:set-property -Dproperty=version.infinispan -DnewVersion=${{ github.event.inputs.nextVersion }}
           git commit -a -m "Next version ${{ github.event.inputs.nextVersion }}"
 
       - name: Push changes
