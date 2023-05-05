@@ -29,17 +29,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Checkout Infinispan repo
-        uses: actions/checkout@v2
-        with:
-          repository: infinispan/infinispan
-          path: infinispan
-          ref: ${{ github.event.pull_request.base.ref }}
-
-      - name: Build Infinispan SNAPSHOT
-        run: ./mvnw install -s maven-settings.xml -am -pl core -DskipTests
-        working-directory: infinispan
-
       - name: JDK 17 Tests
         run: ./mvnw -B verify -Dmaven.test.failure.ignore=true -Dansi.strip=true
 
