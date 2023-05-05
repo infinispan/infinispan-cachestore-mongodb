@@ -1,0 +1,32 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  jdk17:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: JDK 17 Tests
+        run: mvn -B verify -Dmaven.test.failure.ignore=true -Dansi.strip=true
+
+      - name: Test Logs
+        uses: actions/upload-artifact@v3
+        if: success() || failure()
+        with:
+          name: jdk17-test-results
+          path: "**/target/*-reports*/**/TEST-*.xml"
