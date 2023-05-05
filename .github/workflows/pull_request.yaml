@@ -1,0 +1,51 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  jdk17:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Cache local Maven repository
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Checkout Infinispan repo
+        uses: actions/checkout@v2
+        with:
+          repository: infinispan/infinispan
+          path: infinispan
+          ref: ${{ github.event.pull_request.base.ref }}
+
+      - name: Build Infinispan SNAPSHOT
+        run: ./mvnw install -s maven-settings.xml -am -pl core -DskipTests
+        working-directory: infinispan
+
+      - name: JDK 17 Tests
+        run: ./mvnw -B verify -Dmaven.test.failure.ignore=true -Dansi.strip=true
+
+      - name: Test Logs
+        uses: actions/upload-artifact@v3
+        if: success() || failure()
+        with:
+          name: jdk17-test-results
+          path: "**/target/*-reports*/**/TEST-*.xml"
