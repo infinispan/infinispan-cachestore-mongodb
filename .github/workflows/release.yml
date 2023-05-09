@@ -24,9 +24,6 @@ jobs:
         with:
           ref: ${{ github.event.inputs.branch }}
 
-      - name: Set release version
-        run: ./mvnw -B versions:set -DnewVersion=${{ github.event.inputs.version }} -DprocessAllModules=true
-
       - name: Set up Java for publishing to OSSRH
         uses: actions/setup-java@v3
         with:
@@ -37,6 +34,9 @@ jobs:
           server-password: MAVEN_PASSWORD
           gpg-private-key: ${{ secrets.INFINISPAN_MAVEN_GPG_ARMORED }}
           gpg-passphrase: MAVEN_GPG_PASSPHRASE
+
+      - name: Set release version
+        run: ./mvnw -B versions:set -DnewVersion=${{ github.event.inputs.version }} -DprocessAllModules=true
 
       - name: Publish to OSSRH
         run: ./mvnw -B clean deploy -Pcommunity-release -DskipTests
