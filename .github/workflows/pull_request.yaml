@@ -33,7 +33,7 @@ jobs:
         run: ./mvnw -B verify -Dmaven.test.failure.ignore=true -Dansi.strip=true
 
       - name: Test Logs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4.4.3
         if: success() || failure()
         with:
           name: jdk17-test-results
